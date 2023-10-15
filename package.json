@@ -1,0 +1,23 @@
+{
+  "name": "blockset-js",
+  "version": "0.1.0",
+  "description": "BLOCKSET on JavaScript",
+  "main": "index.js",
+  "scripts": {
+    "tsc": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/datablockset/blockset-js.git"
+  },
+  "author": "Denys Shandar",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/datablockset/blockset-js/issues"
+  },
+  "homepage": "https://github.com/datablockset/blockset-js#readme",
+  "devDependencies": {
+    "typescript": "^5.2.2"
+  }
+}
