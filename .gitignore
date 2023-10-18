@@ -128,4 +128,7 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# blockset repo
 package-lock.json
+cdt0

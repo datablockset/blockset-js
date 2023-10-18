@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/datablockset/blockset-js#readme",
   "devDependencies": {
+    "@types/node": "^20.8.6",
     "typescript": "^5.2.2"
   }
 }
