@@ -130,5 +130,4 @@ dist
 .pnp.*
 
 # blockset repo
-package-lock.json
 cdt0
