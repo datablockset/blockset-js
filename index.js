@@ -17,7 +17,7 @@ const getBuffer = root => {
       const tail = data.subarray(1, tailLength + 1)
       let buffer = Buffer.from([])
       console.log(`tail = ${tail}`)
-      for(let i = 1; i < data.length; i += 28) {
+      for(let i = tailLength + 1; i < data.length; i += 28) {
         let hash = 0n
         for(let j = 0; j < 28; j++) {
           hash += BigInt(data[i + j]) << BigInt(8 * j)
@@ -52,4 +52,5 @@ const get = root => file => {
 }
 
 //get('mnb8j83rgrch8hgb8rbz28d64ec2wranzbzxcy4ebypd8')('out')
-get('2va87tc3cqebgg6wagd9dwe36e2vgcpdxjd26enj4c0xh')('out')
+//get('2va87tc3cqebgg6wagd9dwe36e2vgcpdxjd26enj4c0xh')('out')
+get('d963x31mwgb8svqe0jmkxh8ar1f8p2dawebnan4aj6hvd')('out')
