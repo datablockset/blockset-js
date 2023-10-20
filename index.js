@@ -6,6 +6,9 @@ const toBase32 = uint5 => '0123456789abcdefghjkmnpqrstvwxyz'[uint5]
 /** @type {(uint5: number) => number} */
 const getParityBit = uint5 => (uint5 ^ (uint5 >> 1) ^ (uint5 >> 2) ^ (uint5 >> 3) ^ (uint5 >> 4)) & 1
 
+/** @type {(hash: string) => string} */
+const getPath = hash => `${hash.substring(0, 2)}/${hash.substring(2, 4)}/${hash.substring(4)}`
+
 /** @type {(root: string) => Buffer} */
 const getBuffer = root => {
     const data = fs.readFileSync(`cdt0/${root}`)
@@ -35,7 +38,7 @@ const getBuffer = root => {
           hash >>= 5n
         }
         console.log(address)
-        buffer = Buffer.concat([buffer, getBuffer(`_${address}`)])
+        buffer = Buffer.concat([buffer, getBuffer(`parts/${getPath(address)}`)])
       }
       buffer = Buffer.concat([buffer, tail])
       return buffer
@@ -45,7 +48,7 @@ const getBuffer = root => {
 /** @type {(root: string) => (file: string) => void} */
 const get = root => file => {
   try {
-    fs.writeFileSync(file, getBuffer(root))
+    fs.writeFileSync(file, getBuffer(`roots/${getPath(root)}`))
   } catch (err) {
     console.error(err);
   }
