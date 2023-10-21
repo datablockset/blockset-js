@@ -3,8 +3,18 @@ const fs = require('fs')
 /** @type {(uint5: number) => string} */
 const toBase32 = uint5 => '0123456789abcdefghjkmnpqrstvwxyz'[uint5]
 
-/** @type {(uint5: number) => number} */
-const getParityBit = uint5 => (uint5 ^ (uint5 >> 1) ^ (uint5 >> 2) ^ (uint5 >> 3) ^ (uint5 >> 4)) & 1
+/** @type {(uint256: bigint) => number} */
+const getParityBit = uint256 => {
+  let xor = uint256 ^ (uint256 >> 128n)
+  xor ^= xor >> 64n
+  xor ^= xor >> 32n
+  xor ^= xor >> 16n
+  xor ^= xor >> 8n
+  xor ^= xor >> 4n
+  xor ^= xor >> 2n
+  xor ^= xor >> 1n
+  return Number(xor & 1n)
+}
 
 /** @type {(hash: string) => string} */
 const getPath = hash => `${hash.substring(0, 2)}/${hash.substring(2, 4)}/${hash.substring(4)}`
@@ -27,10 +37,9 @@ const getBuffer = root => {
         }
         console.log(hash)
         let address = ''
-        let parity = 0
+        const parity = getParityBit(hash)
         for(let j = 0; j < 45; j++) {
           let uint5 = Number(hash & 0b11111n)
-          parity ^= getParityBit(uint5)
           if (j == 44) {
             uint5 += parity << 4
           }
