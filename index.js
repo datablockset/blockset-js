@@ -38,6 +38,7 @@ const getBuffer = root => {
         console.log(hash)
         let address = ''
         const parity = getParityBit(hash)
+        console.log(parity)
         for(let j = 0; j < 45; j++) {
           let uint5 = Number(hash & 0b11111n)
           if (j == 44) {
@@ -65,4 +66,4 @@ const get = root => file => {
 
 //get('mnb8j83rgrch8hgb8rbz28d64ec2wranzbzxcy4ebypd8')('out')
 //get('2va87tc3cqebgg6wagd9dwe36e2vgcpdxjd26enj4c0xh')('out')
-get('2va87tc3cqebgg6wagd9dwe36e2vgcpdxjd26enj4c0xh')('out')
+get('d963x31mwgb8svqe0jmkxh8ar1f8p2dawebnan4aj6hvd')('out')
