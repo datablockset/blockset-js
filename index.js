@@ -38,7 +38,6 @@ const getBuffer = root => {
         console.log(hash)
         let address = ''
         const parity = getParityBit(hash)
-        console.log(parity)
         for(let j = 0; j < 45; j++) {
           let uint5 = Number(hash & 0b11111n)
           if (j == 44) {
