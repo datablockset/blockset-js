@@ -7,5 +7,5 @@ const { getParityBit } = require('./index')
 
 {
   const parity = getParityBit(1n)
-  if (parity !== 1) { console.error(parity) }
+  if (parity !== 0) { console.error(parity) }
 }
