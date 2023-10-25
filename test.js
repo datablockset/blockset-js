@@ -115,8 +115,8 @@ const u32x8Add = a => b => {
   let result = 0n
   for (let i = 0n; i < 256n; i += 32n) {
     result |= ((a + b) & u32Mask) << i
-    a >> 32n
-    b >> 32n
+    a >>= 32n
+    b >>= 32n
   }
   return result
 }
@@ -159,7 +159,6 @@ const compress = w => {
   round16()
   wRound16()
   round16()
-  console.log(x.toString(16))
   x = u32x8Add(x)(init)
   return x | u32Mask7
 }
