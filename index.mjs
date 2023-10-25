@@ -1,4 +1,4 @@
-const fs = require('fs')
+import fs from 'fs'
 
 /** @type {(uint5: number) => string} */
 const toBase32 = uint5 => '0123456789abcdefghjkmnpqrstvwxyz'[uint5]
@@ -63,8 +63,7 @@ const get = root => file => {
   }
 }
 
-module.exports = {
-  /** @readonly */
+export default{
   getParityBit
 }
 
