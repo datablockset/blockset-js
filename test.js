@@ -81,6 +81,8 @@ const smallSigma0 = smallSigma(7)(18)(3)
 
 const smallSigma1 = smallSigma(17)(19)(10)
 
+const u256Mask = (1n << 256n) - 1n
+
 const u32Mask = (1n << 32n) - 1n
 
 const u32Mask7 = u32Mask << 224n
@@ -91,11 +93,21 @@ const getU32 = uint512 => index => (uint512 >> (index << 5n)) & u32Mask
 /** @type {(uint512: bigint) => (index: bigint) => number} */
 const getU32Number = uint512 => index => Number(getU32(uint512)(index))
 
-/** @type {(uint512: bigint) => (index: bigint) => (uint32: bigint) => bigint} */
-const setU32 = uint512 => index => uint32 => {
+/** @type {(num: number) => bigint} */
+const toBigInt32 = num => {
+  num |= 0
+  if (num < 0) {
+    num += 0x1_0000_0000
+  }
+  return BigInt(num)
+}
+
+/** @type {(uint512: bigint) => (index: bigint) => (num: number) => bigint} */
+const setU32 = uint512 => index => num => {
+  const uint32 = toBigInt32(num)
   index <<= 5n
   const mask = u32Mask << index
-  return (uint512 & ~mask) | ((uint32 & u32Mask) << index)
+  return (uint512 & ~mask) | (uint32 << index)
 }
 
 /** @type {(a: bigint) => (b: bigint) => bigint} */
@@ -125,9 +137,9 @@ const compress = w => {
       const t1 = getU32Number(x)(7n) + bigSigma1(e) + ch(e)(getU32Number(x)(5n))(getU32Number(x)(6n)) + kij + wj
       const t2 = bigSigma0(a) + maj(a)(getU32Number(x)(1n))(getU32Number(x)(2n))
       x <<= 32n
-      x = setU32(x)(8n)(0n)
-      x = setU32(x)(4n)(BigInt(d + t1))
-      x = setU32(x)(0n)(BigInt(t1 + t2))
+      x &= u256Mask
+      x = setU32(x)(4n)(d + t1)
+      x = setU32(x)(0n)(t1 + t2)
     }
     for (let j = 0n; j < 16n; j += 1n) {
       round(j)
@@ -135,9 +147,8 @@ const compress = w => {
   }
   const wRound16 = () => {
     for (let j = 0; j < 16; j++) {
-      const w0 = (smallSigma1(getU32Number(w)(0xen)) + getU32Number(w)(0x9n) + smallSigma0(getU32Number(w)(0x1n)) + getU32Number(w)(0x0n)) | 0
-      w = (w >> 32n)
-      w = setU32(w)(0xfn)(BigInt(w0))
+      const w0 = smallSigma1(getU32Number(w)(0xen)) + getU32Number(w)(0x9n) + smallSigma0(getU32Number(w)(0x1n)) + getU32Number(w)(0x0n)
+      w = (w >> 32n) | (toBigInt32(w0) << 480n)
     }
     i++
   }
@@ -148,6 +159,7 @@ const compress = w => {
   round16()
   wRound16()
   round16()
+  console.log(x.toString(16))
   x = u32x8Add(x)(init)
   return x | u32Mask7
 }
