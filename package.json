@@ -2,10 +2,10 @@
   "name": "blockset-js",
   "version": "0.1.0",
   "description": "BLOCKSET on JavaScript",
-  "main": "index.js",
+  "main": "index.mjs",
   "scripts": {
     "tsc": "tsc",
-    "test": "tsc & node test.js"
+    "test": "tsc & node test.mjs"
   },
   "repository": {
     "type": "git",

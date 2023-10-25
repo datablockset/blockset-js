@@ -1,4 +1,5 @@
-const { getParityBit } = require('./index')
+import index from './index.mjs'
+const { getParityBit } = index
 
 {
   const parity = getParityBit(0n)
