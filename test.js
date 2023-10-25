@@ -125,6 +125,7 @@ const compress = w => {
       const t1 = getU32Number(x)(7n) + bigSigma1(e) + ch(e)(getU32Number(x)(5n))(getU32Number(x)(6n)) + kij + wj
       const t2 = bigSigma0(a) + maj(a)(getU32Number(x)(1n))(getU32Number(x)(2n))
       x <<= 32n
+      x = setU32(x)(8n)(0n)
       x = setU32(x)(4n)(BigInt(d + t1))
       x = setU32(x)(0n)(BigInt(t1 + t2))
     }
@@ -134,8 +135,9 @@ const compress = w => {
   }
   const wRound16 = () => {
     for (let j = 0; j < 16; j++) {
-      const w0 = smallSigma1(getU32Number(w)(0xen)) + getU32Number(w)(0x9n) + smallSigma0(getU32Number(w)(0x1n)) + getU32Number(w)(0x0n)
-      w = (w >> 32n) | (BigInt(w0 | 0) << 480n)
+      const w0 = (smallSigma1(getU32Number(w)(0xen)) + getU32Number(w)(0x9n) + smallSigma0(getU32Number(w)(0x1n)) + getU32Number(w)(0x0n)) | 0
+      w = (w >> 32n)
+      w = setU32(w)(0xfn)(BigInt(w0))
     }
     i++
   }
