@@ -5,6 +5,8 @@ const { getParityBit } = index
 const { compress } = sha224
 const { merge, byteToDigest, len } = digest256
 
+console.log(`test start`)
+
 {
   const parity = getParityBit(0n)
   if (parity !== 0) { throw parity }

@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'node:fs'
 
 /** @type {(uint5: number) => string} */
 const toBase32 = uint5 => '0123456789abcdefghjkmnpqrstvwxyz'[uint5]
