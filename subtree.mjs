@@ -45,7 +45,7 @@ const height = a => b => {
     return leadingZero256(v)
 }
 
-/** @type {(state: State) => (last0: bigint) => Nullable<bigint>} */
+/** @type {(state: State) => (last0: bigint) => bigint} */
 const end = state => last0 => {
     while (true) {
         let last1 = state.pop()
