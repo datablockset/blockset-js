@@ -47,25 +47,41 @@ const height = a => b => {
 
 /** @type {(state: State) => (last0: bigint) => Nullable<bigint>} */
 const end = state => last0 => {
-    throw 'not implemented'
+    while (true) {
+        let last1 = state.pop()
+        if (last1 === undefined) {
+            return last0
+        }
+        last0 = merge(last1[nodeRoot])(last0)
+    }
 }
 
 /** @type {(state: State) => (last0: bigint) => Nullable<bigint>} */
-const push = state => last0Last => {
+const push = state => last0 => {
     let height10 = 0n
     let last1 = state.pop()
     if (last1 !== undefined) {
-        if (last0Last >= last1[nodeLast]) {
-            return end(state)(merge(last1[nodeRoot])(last0Last))
+        if (last0 >= last1[nodeLast]) {
+            return end(state)(merge(last1[nodeRoot])(last0))
         }
-        //height10 =
+        height10 = height(last1[nodeLast])(last0)
+        while (last1[nodeHeight] > height10) {
+            let last2 = state.pop()
+            if (last2 === undefined) throw 'invalid state'
+            last1 = [
+                merge(last2[nodeRoot])(last1[nodeRoot]),
+                last1[nodeLast],
+                last2[nodeHeight]
+            ]
+        }
+        state.push(last1)
     }
-    throw 'not implemented'
-    //state.push([last0, height10])
+    state.push([last0, last0, height10])
     return null
-
 }
 
 export default {
-    highestOne256
+    highestOne256,
+    height,
+    push
 }

@@ -5,7 +5,7 @@ import subtree from './subtree.mjs'
 const { getParityBit } = index
 const { compress } = sha224
 const { merge, byteToDigest, len } = digest256
-const { highestOne256 } = subtree
+const { highestOne256, height, push } = subtree
 
 console.log(`test start`)
 
@@ -101,5 +101,55 @@ console.log(`test start`)
   {
     const result = highestOne256(0x8000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000n)
     if (result !== 256n) { throw result }
+  }
+
+  {
+    const result = height(0n)(0n)
+    if (result !== 256n) { throw result }
+  }
+
+  {
+    const result = height(0n)(1n)
+    if (result !== 255n) { throw result }
+  }
+
+  {
+    const result = height(1n)(0n)
+    if (result !== 255n) { throw result }
+  }
+
+  {
+    const result = height(0n)(0x1_0000_0000_0000_0000_0000_0000_0000_0000n)
+    if (result !== 127n) { throw result }
+  }
+
+  {
+    const result = height(0x1_0000_0000_0000_0000_0000_0000_0000_0000n)(0x1_0000_0000_0000_0000_0000_0000_0000_0000n)
+    if (result !== 256n) { throw result }
+  }
+
+  {
+    const result = height(1n)(1n)
+    if (result !== 256n) { throw result }
+  }
+
+  {
+    const result = height(0n)(0x1_0000_0000_0000_0000_0000_0000_0000_01can)
+    if (result !== 127n) { throw result }
+  }
+
+  {
+    const result = height(0n)(0x1ca_0000_0000_0000_0000_0000_0000_0000_0001n)
+    if (result !== 119n) { throw result }
+  }
+
+  {
+    const result = height(0x7_0000_0000_0000_0000_0000_0000_0000_0000n)(0x4_0000_0000_0000_0000_0000_0000_0000_01can)
+    if (result !== 126n) { throw result }
+  }
+
+  {
+    const result = height(0n)(0x8000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_01can)
+    if (result !== 0n) { throw result }
   }
 }
