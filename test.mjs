@@ -1,9 +1,12 @@
 import index from './index.mjs'
 import sha224 from './sha224.mjs'
 import digest256 from './digest256.mjs'
+import subtree from './subtree.mjs'
+/** @typedef {import('./subtree.mjs').State} State */
 const { getParityBit } = index
 const { compress } = sha224
 const { merge, byteToDigest, len } = digest256
+const { highestOne256, height, push } = subtree
 
 console.log(`test start`)
 
@@ -57,5 +60,133 @@ console.log(`test start`)
   {
     const result = merge(0n)(a)
     if (result !== a) { throw result }
+  }
+}
+
+{
+  {
+    const result = highestOne256(0n)
+    if (result !== 0n) { throw result }
+  }
+
+  {
+    const result = highestOne256(1n)
+    if (result !== 1n) { throw result }
+  }
+
+  {
+    const result = highestOne256(2n)
+    if (result !== 2n) { throw result }
+  }
+
+  {
+    const result = highestOne256(3n)
+    if (result !== 2n) { throw result }
+  }
+
+  {
+    const result = highestOne256(4n)
+    if (result !== 3n) { throw result }
+  }
+
+  {
+    const result = highestOne256(8n)
+    if (result !== 4n) { throw result }
+  }
+
+  {
+    const result = highestOne256(8n)
+    if (result !== 4n) { throw result }
+  }
+
+  {
+    const result = highestOne256(0x8000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000n)
+    if (result !== 256n) { throw result }
+  }
+
+  {
+    const result = height(0n)(0n)
+    if (result !== 256n) { throw result }
+  }
+
+  {
+    const result = height(0n)(1n)
+    if (result !== 255n) { throw result }
+  }
+
+  {
+    const result = height(1n)(0n)
+    if (result !== 255n) { throw result }
+  }
+
+  {
+    const result = height(0n)(0x1_0000_0000_0000_0000_0000_0000_0000_0000n)
+    if (result !== 127n) { throw result }
+  }
+
+  {
+    const result = height(0x1_0000_0000_0000_0000_0000_0000_0000_0000n)(0x1_0000_0000_0000_0000_0000_0000_0000_0000n)
+    if (result !== 256n) { throw result }
+  }
+
+  {
+    const result = height(1n)(1n)
+    if (result !== 256n) { throw result }
+  }
+
+  {
+    const result = height(0n)(0x1_0000_0000_0000_0000_0000_0000_0000_01can)
+    if (result !== 127n) { throw result }
+  }
+
+  {
+    const result = height(0n)(0x1ca_0000_0000_0000_0000_0000_0000_0000_0001n)
+    if (result !== 119n) { throw result }
+  }
+
+  {
+    const result = height(0x7_0000_0000_0000_0000_0000_0000_0000_0000n)(0x4_0000_0000_0000_0000_0000_0000_0000_01can)
+    if (result !== 126n) { throw result }
+  }
+
+  {
+    const result = height(0n)(0x8000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_01can)
+    if (result !== 0n) { throw result }
+  }
+
+  {
+    let a = byteToDigest(0b01)
+    let b = byteToDigest(0b10)
+    let c = byteToDigest(0b11)
+    {
+      /** @type {State} */
+      let state = []
+      push(state)(a)
+      if (state.length !== 1) { throw state.length }
+      const state0 = state[0]
+      if (state0[0] !== a) { throw state0[0] }
+      if (state0[1] !== a) { throw state0[1] }
+      if (state0[2] !== 0n) { throw state0[2] }
+      const ab = push(state)(b)
+      const mergeAB = merge(a)(b)
+      if (ab !== mergeAB) { throw ab }
+      state = state
+      if (state.length !== 0) { throw state.length }
+    }
+    {
+      /** @type {State} */
+      let state = []
+      let result = push(state)(c)
+      if (result !== null) { throw result }
+      result = push(state)(b)
+      if (result !== null) { throw result }
+      if (state.length !== 2 ) { throw state.length }
+      result = push(state)(a)
+      if (result !== null) { throw result }
+      if (state.length !== 2 ) { throw state.length }
+      result = push(state)(a)
+      const mergeCB_AA = merge(merge(c)(b))(merge(a)(a))
+      if (result != mergeCB_AA) { throw result }
+    }
   }
 }
