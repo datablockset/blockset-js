@@ -21,10 +21,10 @@ const highestOne256 = bu256 => {
     let result = 0n
     let index = 256n
     while (bu256 !== 0n) {
+        index >>= 1n
         if (index === 0n) {
             return result + 1n
         }
-        index >>= 1n
         const high = bu256 >> index
         if (high === 0n) {
             bu256 &= (1n << index) - 1n
