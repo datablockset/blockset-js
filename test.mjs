@@ -2,8 +2,7 @@ import index from './index.mjs'
 import sha224 from './sha224.mjs'
 import digest256 from './digest256.mjs'
 import subtree from './subtree.mjs'
-import { stat } from 'fs'
-  /** @typedef {import('./subtree.mjs').State} State */
+/** @typedef {import('./subtree.mjs').State} State */
 const { getParityBit } = index
 const { compress } = sha224
 const { merge, byteToDigest, len } = digest256
