@@ -1,9 +1,11 @@
 import index from './index.mjs'
 import sha224 from './sha224.mjs'
 import digest256 from './digest256.mjs'
+import subtree from './subtree.mjs'
 const { getParityBit } = index
 const { compress } = sha224
 const { merge, byteToDigest, len } = digest256
+const { highestOne256 } = subtree
 
 console.log(`test start`)
 
@@ -57,5 +59,47 @@ console.log(`test start`)
   {
     const result = merge(0n)(a)
     if (result !== a) { throw result }
+  }
+}
+
+{
+  {
+    const result = highestOne256(0n)
+    if (result !== 0n) { throw result }
+  }
+
+  {
+    const result = highestOne256(1n)
+    if (result !== 1n) { throw result }
+  }
+
+  {
+    const result = highestOne256(2n)
+    if (result !== 2n) { throw result }
+  }
+
+  {
+    const result = highestOne256(3n)
+    if (result !== 2n) { throw result }
+  }
+
+  {
+    const result = highestOne256(4n)
+    if (result !== 3n) { throw result }
+  }
+
+  {
+    const result = highestOne256(8n)
+    if (result !== 4n) { throw result }
+  }
+
+  {
+    const result = highestOne256(8n)
+    if (result !== 4n) { throw result }
+  }
+
+  {
+    const result = highestOne256(0x8000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000n)
+    if (result !== 256n) { throw result }
   }
 }
