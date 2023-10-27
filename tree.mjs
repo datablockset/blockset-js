@@ -13,9 +13,11 @@ const { compress } = sha224
 const mask244 = ((1n << 224n) - 1n)
 
 /** @type {(state: State) => (nu8: number) => void} */
-const push = state => nu8 => {
+const push = state => nu8 => pushDigest(state)(byteToDigest(nu8))
+
+/** @type {(state: State) => (bu256: bigint) => void} */
+const pushDigest = state => last0 => {
     let i = 0
-    let last0 = byteToDigest(nu8)
     while (true) {
         let subTree = state[i]
         if (subTree === undefined) {
@@ -32,15 +34,28 @@ const push = state => nu8 => {
 }
 
 /** @type {(state: State) => bigint} */
-const end = state => {
+const end = state => compress(internalEnd(state)) & mask244
+
+/** @type {(state: State) => bigint | null} */
+const partialEnd = state => {
+    let digest256 = internalEnd(state)
+    if (digest256 >> 224n === 0xffff_ffffn) {
+        return null
+    }
+    return digest256 & mask244
+}
+
+/** @type {(state: State) => bigint} */
+const internalEnd = state => {
     let last0 = 0n
     for (let subTree of state) {
         last0 = endSubTree(subTree)(last0)
     }
-    return compress(last0) & mask244
+    return last0
 }
 
 export default {
     push,
-    end
+    end,
+    partialEnd
 }

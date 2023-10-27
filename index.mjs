@@ -5,9 +5,9 @@ const { toAddress } = base32
 /** @type {(hash: string) => string} */
 const getPath = hash => `${hash.substring(0, 2)}/${hash.substring(2, 4)}/${hash.substring(4)}`
 
-/** @type {(root: string) => Buffer} */
-const getBuffer = root => {
-    const data = fs.readFileSync(`cdt0/${root}`)
+/** @type {(path: string) => Buffer} */
+const getBuffer = path => {
+    const data = fs.readFileSync(`cdt0/${path}`)
     const tailLength = data[0]
     console.log(`tail length = ${tailLength}`)
     if (tailLength === 32) {
