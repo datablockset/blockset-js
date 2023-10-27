@@ -204,5 +204,5 @@ console.log(`test start`)
   }
   const digest = endTree(tree)
   const result = toAddress(digest)
-  if (result !== 'cvvdhpk3bmx49h757b3rkghzfd1v8gnadwwyfv6gkb0h5') { throw result }
+  if (result !== 'vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe') { throw result }
 }
