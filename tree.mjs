@@ -10,6 +10,8 @@ const { compress } = sha224
  * @typedef {SubTreeState[]} State
  */
 
+const mask244 = ((1n << 224n) - 1n)
+
 /** @type {(state: State) => (nu8: number) => void} */
 const push = state => nu8 => {
     let i = 0
@@ -35,7 +37,7 @@ const end = state => {
     for (let subTree of state) {
         last0 = endSubTree(subTree)(last0)
     }
-    return compress(last0)
+    return compress(last0) & mask244
 }
 
 export default {

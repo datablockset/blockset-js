@@ -1,12 +1,16 @@
-import index from './index.mjs'
+import base32 from './base32.mjs'
 import sha224 from './sha224.mjs'
 import digest256 from './digest256.mjs'
 import subtree from './subtree.mjs'
-/** @typedef {import('./subtree.mjs').State} State */
-const { getParityBit } = index
+import tree from './tree.mjs'
+import fs from 'node:fs'
+/** @typedef {import('./subtree.mjs').State} StateSubTree */
+/** @typedef {import('./tree.mjs').State} StateTree */
+const { toAddress, getParityBit } = base32
 const { compress } = sha224
 const { merge, byteToDigest, len } = digest256
-const { highestOne256, height, push } = subtree
+const { highestOne256, height, push: pushSubTree } = subtree
+const { push: pushTree, end: endTree } = tree
 
 console.log(`test start`)
 
@@ -159,34 +163,46 @@ console.log(`test start`)
     let b = byteToDigest(0b10)
     let c = byteToDigest(0b11)
     {
-      /** @type {State} */
+      /** @type {StateSubTree} */
       let state = []
-      push(state)(a)
+      pushSubTree(state)(a)
       if (state.length !== 1) { throw state.length }
       const state0 = state[0]
       if (state0[0] !== a) { throw state0[0] }
       if (state0[1] !== a) { throw state0[1] }
       if (state0[2] !== 0n) { throw state0[2] }
-      const ab = push(state)(b)
+      const ab = pushSubTree(state)(b)
       const mergeAB = merge(a)(b)
       if (ab !== mergeAB) { throw ab }
       state = state
       if (state.length !== 0) { throw state.length }
     }
     {
-      /** @type {State} */
+      /** @type {StateSubTree} */
       let state = []
-      let result = push(state)(c)
+      let result = pushSubTree(state)(c)
       if (result !== null) { throw result }
-      result = push(state)(b)
-      if (result !== null) { throw result }
-      if (state.length !== 2 ) { throw state.length }
-      result = push(state)(a)
+      result = pushSubTree(state)(b)
       if (result !== null) { throw result }
       if (state.length !== 2 ) { throw state.length }
-      result = push(state)(a)
+      result = pushSubTree(state)(a)
+      if (result !== null) { throw result }
+      if (state.length !== 2 ) { throw state.length }
+      result = pushSubTree(state)(a)
       const mergeCB_AA = merge(merge(c)(b))(merge(a)(a))
       if (result != mergeCB_AA) { throw result }
     }
   }
+}
+
+{
+  const data = fs.readFileSync(`examples/small.txt`)
+  /** @type {StateTree} */
+  let tree = []
+  for (let byte of data) {
+    pushTree(tree)(byte)
+  }
+  const digest = endTree(tree)
+  const result = toAddress(digest)
+  if (result !== 'cvvdhpk3bmx49h757b3rkghzfd1v8gnadwwyfv6gkb0h5') { throw result }
 }
