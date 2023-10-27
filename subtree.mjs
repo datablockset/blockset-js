@@ -43,6 +43,9 @@ const height = a => b => {
     return leadingZero256(v)
 }
 
+/** @type {(bu256: bigint) => State} */
+const newState = bu256 => [[bu256, bu256, 0n]]
+
 /** @type {(state: State) => (last0: bigint) => bigint} */
 const end = state => last0 => {
     while (true) {
@@ -81,5 +84,7 @@ const push = state => last0 => {
 export default {
     highestOne256,
     height,
-    push
+    push,
+    newState,
+    end
 }

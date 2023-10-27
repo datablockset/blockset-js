@@ -151,6 +151,10 @@ const compress = w => {
   return x | u32Mask7
 }
 
+/** @type {(a256: bigint) => (b256: bigint) => bigint} */
+const compress2 = a256 => b256 => compress(a256 | (b256 << 256n))
+
 export default {
-    compress
+    compress,
+    compress2
 }

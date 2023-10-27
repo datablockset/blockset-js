@@ -1,5 +1,5 @@
 import sha224 from './sha224.mjs'
-const { compress } = sha224
+const { compress2 } = sha224
 
 const maxLength = 248n
 
@@ -31,7 +31,7 @@ const merge = a => b => {
         const data = getData(a) | (getData(b) << lenA);
         return data | (lenAB << maxLength)
     }
-    return compress(a | (b << 256n))
+    return compress2(a)(b)
 }
 
 export default {
