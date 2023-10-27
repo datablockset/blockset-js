@@ -18,13 +18,10 @@ const nodeHeight = 2
 
 /** @type {(bu256: bigint) => bigint} */
 const highestOne256 = bu256 => {
-    let result = 0n
-    let index = 256n
-    while (bu256 !== 0n) {
-        index >>= 1n
-        if (index === 0n) {
-            return result + 1n
-        }
+    if (bu256 === 0n) { return 0n }
+    let result = 1n
+    let index = 128n
+    while (true) {
         const high = bu256 >> index
         if (high === 0n) {
             bu256 &= (1n << index) - 1n
@@ -32,8 +29,9 @@ const highestOne256 = bu256 => {
             bu256 = high
             result += index
         }
+        if (index === 1n) { return result }
+        index >>= 1n
     }
-    return result
 }
 
 /** @type {(bu256: bigint) => bigint} */
