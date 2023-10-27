@@ -29,6 +29,15 @@ jobs:
     - run: npm ci
     - run: npm test
 
+  node-windows:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - run: npm ci
+    - run: npm test
+
   deno:
 
     runs-on: ubuntu-latest
