@@ -34,12 +34,15 @@ const pushDigest = state => last0 => {
 }
 
 /** @type {(state: State) => bigint} */
-const end = state => {
+const end = state => compress(partEnd(state)) & mask244
+
+/** @type {(state: State) => bigint} */
+const partEnd = state => {
     let last0 = 0n
     for (let subTree of state) {
         last0 = endSubTree(subTree)(last0)
     }
-    return compress(last0) & mask244
+    return last0
 }
 
 export default {
