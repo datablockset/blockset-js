@@ -34,10 +34,19 @@ const pushDigest = state => last0 => {
 }
 
 /** @type {(state: State) => bigint} */
-const end = state => compress(partEnd(state)) & mask244
+const end = state => compress(internalEnd(state)) & mask244
+
+/** @type {(state: State) => bigint | null} */
+const partialEnd = state => {
+    let digest256 = internalEnd(state)
+    if (digest256 >> 224n === 0xffff_ffffn) {
+        return null
+    }
+    return digest256 & mask244
+}
 
 /** @type {(state: State) => bigint} */
-const partEnd = state => {
+const internalEnd = state => {
     let last0 = 0n
     for (let subTree of state) {
         last0 = endSubTree(subTree)(last0)
@@ -47,5 +56,6 @@ const partEnd = state => {
 
 export default {
     push,
-    end
+    end,
+    partialEnd
 }
