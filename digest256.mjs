@@ -25,7 +25,13 @@ const getData = bu256 => bu256 & dataMask
 /** @type {(a: bigint) => (b: bigint) => bigint} */
 const merge = a => b => {
     const lenA = len(a)
+    if (lenA === 0n) {
+        return b
+    }
     const lenB = len(b)
+    if (lenB === 0n) {
+        return a
+    }
     const lenAB = lenA + lenB
     if (lenAB <= maxLength) {
         const data = getData(a) | (getData(b) << lenA);
@@ -34,8 +40,22 @@ const merge = a => b => {
     return compress2(a)(b)
 }
 
+
+/** @type {(tail: Buffer) => bigint} */
+const tailToDigest = tail => {
+    if (tail.length > 31) {
+        throw 'invalid tail'
+    }
+    let result = 0n
+    for(let byte of tail) {
+        result = merge(result)(byteToDigest(byte))
+    }
+    return result
+}
+
 export default {
     merge,
     byteToDigest,
+    tailToDigest,
     len
 }
