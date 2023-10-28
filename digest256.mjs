@@ -25,7 +25,13 @@ const getData = bu256 => bu256 & dataMask
 /** @type {(a: bigint) => (b: bigint) => bigint} */
 const merge = a => b => {
     const lenA = len(a)
+    if (lenA === 0n) {
+        return b
+    }
     const lenB = len(b)
+    if (lenB === 0n) {
+        return a
+    }
     const lenAB = lenA + lenB
     if (lenAB <= maxLength) {
         const data = getData(a) | (getData(b) << lenA);
