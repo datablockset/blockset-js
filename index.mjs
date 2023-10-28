@@ -23,6 +23,9 @@ const verifyData = data => ([address, isRoot]) => {
   for (let byte of data) {
     pushTree(tree)(byte)
   }
+  // console.log(`tree length = ${tree.length}`)
+  // let s = tree.map(subTree => subTree.length.toString()).join(',')
+  // console.log(s)
   const digest = isRoot ? endTree(tree) : partialEndTree(tree)
   if (digest === null) {
     return false
@@ -69,6 +72,6 @@ const get = root => file => {
 }
 
 //get('mnb8j83rgrch8hgb8rbz28d64ec2wranzbzxcy4ebypd8')('out')
-get('2va87tc3cqebgg6wagd9dwe36e2vgcpdxjd26enj4c0xh')('out')
+//get('2va87tc3cqebgg6wagd9dwe36e2vgcpdxjd26enj4c0xh')('out')
 //get('d963x31mwgb8svqe0jmkxh8ar1f8p2dawebnan4aj6hvd')('out')
 //get('vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe')('out')
