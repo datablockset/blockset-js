@@ -1,17 +1,47 @@
 import fs from 'node:fs'
 import base32 from './base32.mjs'
+import tree from './tree.mjs'
+/** @typedef {import('./tree.mjs').State} StateTree */
 const { toAddress } = base32
+const { push: pushTree, end: endTree, partialEnd: partialEndTree } = tree
 
-/** @type {(hash: string) => string} */
-const getPath = hash => `${hash.substring(0, 2)}/${hash.substring(2, 4)}/${hash.substring(4)}`
+/**
+ * second element is root flag
+ * @typedef {readonly [string, boolean]} Address
+ */
 
-/** @type {(path: string) => Buffer} */
-const getBuffer = path => {
-    const data = fs.readFileSync(`cdt0/${path}`)
+const mask244 = ((1n << 224n) - 1n)
+
+/** @type {(address: Address) => string} */
+const getPath = ([address, isRoot]) => {
+  const dir = isRoot ? 'roots' : 'parts'
+  return `cdt0/${dir}/${address.substring(0, 2)}/${address.substring(2, 4)}/${address.substring(4)}`
+}
+
+/** @type {(buffer: Buffer) => (address: Address) => boolean} */
+const verifyData = data => ([address, isRoot]) => {
+    /** @type {StateTree} */
+  let tree = []
+  for (let byte of data) {
+    pushTree(tree)(byte)
+  }
+  const digest = isRoot ? endTree(tree) : partialEndTree(tree)
+  if (digest === null) {
+    return false
+  }
+  return toAddress(digest) === address
+}
+
+/** @type {(address: Address) => Buffer} */
+const getBuffer = address => {
+    const path = getPath(address)
+    const data = fs.readFileSync(path)
     const tailLength = data[0]
     console.log(`tail length = ${tailLength}`)
     if (tailLength === 32) {
-      return data.subarray(1)
+      const result = data.subarray(1)
+      console.log(verifyData(result)(address))
+      return result
     } else {
       const tail = data.subarray(1, tailLength + 1)
       let buffer = Buffer.from([])
@@ -22,9 +52,9 @@ const getBuffer = path => {
           hash += BigInt(data[i + j]) << BigInt(8 * j)
         }
         console.log(hash)
-        const address = toAddress(hash)
-        console.log(address)
-        buffer = Buffer.concat([buffer, getBuffer(`parts/${getPath(address)}`)])
+        const childAddress = toAddress(hash)
+        console.log(childAddress)
+        buffer = Buffer.concat([buffer, getBuffer([childAddress, false])])
       }
       buffer = Buffer.concat([buffer, tail])
       return buffer
@@ -34,7 +64,7 @@ const getBuffer = path => {
 /** @type {(root: string) => (file: string) => void} */
 const get = root => file => {
   try {
-    fs.writeFileSync(file, getBuffer(`roots/${getPath(root)}`))
+    fs.writeFileSync(file, getBuffer([root, true]))
   } catch (err) {
     console.error(err);
   }
@@ -43,3 +73,4 @@ const get = root => file => {
 //get('mnb8j83rgrch8hgb8rbz28d64ec2wranzbzxcy4ebypd8')('out')
 //get('2va87tc3cqebgg6wagd9dwe36e2vgcpdxjd26enj4c0xh')('out')
 //get('d963x31mwgb8svqe0jmkxh8ar1f8p2dawebnan4aj6hvd')('out')
+get('vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe')('out')
