@@ -56,6 +56,7 @@ const internalEnd = state => {
 
 export default {
     push,
+    pushDigest,
     end,
     partialEnd
 }

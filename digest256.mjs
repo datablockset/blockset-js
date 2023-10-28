@@ -40,8 +40,22 @@ const merge = a => b => {
     return compress2(a)(b)
 }
 
+
+/** @type {(tail: Buffer) => bigint} */
+const tailToDigest = tail => {
+    if (tail.length > 31) {
+        throw 'invalid tail'
+    }
+    let result = 0n
+    for(let byte of tail) {
+        result = merge(result)(byteToDigest(byte))
+    }
+    return result
+}
+
 export default {
     merge,
     byteToDigest,
+    tailToDigest,
     len
 }
