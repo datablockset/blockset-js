@@ -57,18 +57,20 @@ const getBuffer = ([address, isRoot]) => {
   return result
 }
 
-/** @type {(root: string) => (file: string) => void} */
+/** @type {(root: string) => (file: string) => number} */
 const get = root => file => {
   try {
     const buffer = getBuffer([root, true])
     if (typeof buffer === 'string') {
       console.error(`corrupted file with address ${buffer}`)
-      return
+      return -1
     }
     fs.writeFileSync(file, buffer)
   } catch (err) {
     console.error(err);
+    return -1
   }
+  return 0
 }
 
 export default {

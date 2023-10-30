@@ -210,5 +210,6 @@ console.log(`test start`)
 }
 
 {
-  get('vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6')('out')
+  const exitCode = get('vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6')('out')
+  if (exitCode !== 0) { throw exitCode }
 }
