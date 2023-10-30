@@ -3,6 +3,7 @@ import sha224 from './sha224.mjs'
 import digest256 from './digest256.mjs'
 import subtree from './subtree.mjs'
 import tree from './tree.mjs'
+import index from './index.mjs'
 import fs from 'node:fs'
 /** @typedef {import('./subtree.mjs').State} StateSubTree */
 /** @typedef {import('./tree.mjs').State} StateTree */
@@ -11,6 +12,7 @@ const { compress } = sha224
 const { merge, byteToDigest, len } = digest256
 const { highestOne256, height, push: pushSubTree } = subtree
 const { push: pushTree, end: endTree } = tree
+const { get } = index
 
 console.log(`test start`)
 
@@ -205,4 +207,8 @@ console.log(`test start`)
   const digest = endTree(tree)
   const result = toAddress(digest)
   if (result !== 'vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe') { throw result }
+}
+
+{
+  get('2va87tc3cqebgg6wagd9dwe36e2vgcpdxjd26enj4c0xh')('out')
 }
