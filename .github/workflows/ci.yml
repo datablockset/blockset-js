@@ -28,6 +28,7 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: cargo install blockset
+    - run: blockset add .\examples\list.txt
     - run: npm test
 
   node-windows:
