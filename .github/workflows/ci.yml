@@ -27,16 +27,20 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm ci
+    - run: cargo install blockset
+    - run: npm run blockset-prepare
     - run: npm test
 
-  node-windows:
+  # node-windows:
 
-    runs-on: windows-latest
+  #   runs-on: windows-latest
 
-    steps:
-    - uses: actions/checkout@v3
-    - run: npm ci
-    - run: npm test
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - run: npm ci
+  #   - run: cargo install blockset
+  #   - run: npm run blockset-prepare
+  #   - run: npm test
 
   deno:
 
@@ -47,8 +51,10 @@ jobs:
     - uses: denoland/setup-deno@v1
       with:
         deno-version: v1.x
+    - run: cargo install blockset
+    - run: npm run blockset-prepare
     # - run: deno run --quiet --allow-read --allow-env --allow-net --allow-hrtime ./test.mjs
-    - run: deno run --quiet --allow-read ./test.mjs
+    - run: deno run --quiet --allow-read --allow-write ./test.mjs
 
   bun:
 
@@ -57,4 +63,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - run: curl -fsSL https://bun.sh/install | bash
+    - run: cargo install blockset
+    - run: npm run blockset-prepare
     - run: /home/runner/.bun/bin/bun ./test.mjs

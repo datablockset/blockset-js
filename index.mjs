@@ -18,15 +18,14 @@ const getPath = ([address, isRoot]) => {
   return `cdt0/${dir}/${address.substring(0, 2)}/${address.substring(2, 4)}/${address.substring(4)}`
 }
 
-/** @type {(address: Address) => Buffer | string} */
+/** @type {(address: Address) => Uint8Array | string} */
 const getBuffer = ([address, isRoot]) => {
   /** @type {StateTree} */
   let verificationTree = []
   const path = getPath([address, isRoot])
   const data = fs.readFileSync(path)
   const tailLength = data[0]
-  /** @type {Buffer} */
-  let result = Buffer.from([])
+  let result = new Uint8Array()
   if (tailLength === 32) {
     result = data.subarray(1)
     for (let byte of result) {
@@ -45,10 +44,10 @@ const getBuffer = ([address, isRoot]) => {
       if (typeof childBuffer === 'string') {
         return childBuffer
       }
-      result = Buffer.concat([result, childBuffer])
+      result = new Uint8Array([ ...result, ...childBuffer ]);
     }
     pushDigest(verificationTree)(tailToDigest(tail))
-    result = Buffer.concat([result, tail])
+    result = new Uint8Array([ ...result, ...tail ]);
   }
   const digest = isRoot ? endTree(verificationTree) : partialEndTree(verificationTree)
   if (digest === null || toAddress(digest) !== address) {
@@ -57,21 +56,27 @@ const getBuffer = ([address, isRoot]) => {
   return result
 }
 
-/** @type {(root: string) => (file: string) => void} */
+/** @type {(root: string) => (file: string) => number} */
 const get = root => file => {
   try {
     const buffer = getBuffer([root, true])
     if (typeof buffer === 'string') {
       console.error(`corrupted file with address ${buffer}`)
-      return
+      return -1
     }
     fs.writeFileSync(file, buffer)
   } catch (err) {
     console.error(err);
+    return -1
   }
+  return 0
+}
+
+export default {
+  get
 }
 
 //get('mnb8j83rgrch8hgb8rbz28d64ec2wranzbzxcy4ebypd8')('out')
-get('2va87tc3cqebgg6wagd9dwe36e2vgcpdxjd26enj4c0xh')('out')
+//get('vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6')('out')
 //get('d963x31mwgb8svqe0jmkxh8ar1f8p2dawebnan4aj6hvd')('out')
 //get('vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe')('out')

@@ -5,6 +5,7 @@
   "main": "index.mjs",
   "scripts": {
     "tsc": "tsc",
+    "blockset-prepare": "blockset add ./examples/list.txt",
     "test": "tsc & node --trace-uncaught test.mjs"
   },
   "repository": {
