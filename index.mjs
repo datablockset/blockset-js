@@ -18,15 +18,14 @@ const getPath = ([address, isRoot]) => {
   return `cdt0/${dir}/${address.substring(0, 2)}/${address.substring(2, 4)}/${address.substring(4)}`
 }
 
-/** @type {(address: Address) => Buffer | string} */
+/** @type {(address: Address) => Uint8Array | string} */
 const getBuffer = ([address, isRoot]) => {
   /** @type {StateTree} */
   let verificationTree = []
   const path = getPath([address, isRoot])
   const data = fs.readFileSync(path)
   const tailLength = data[0]
-  /** @type {Buffer} */
-  let result = Buffer.from([])
+  let result = new Uint8Array()
   if (tailLength === 32) {
     result = data.subarray(1)
     for (let byte of result) {
