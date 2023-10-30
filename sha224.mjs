@@ -30,22 +30,22 @@ const k = [
 
 const init = 0xbefa4fa4_64f98fa7_68581511_ffc00b31_f70e5939_3070dd17_367cd507_c1059ed8n
 
-/** @type {(d: number) => (n: number) => number} */
+/** @type {(d: bigint) => (n: bigint) => bigint} */
 const rotr = d => {
-  const r = 32 - d
-  return n => n >>> d | n << r
+  const r = 32n - d
+  return n => shr(d)(n) | n << r
 }
 
-/** @type {(x: number) => (y: number) => (z: number) => number} */
+/** @type {(x: bigint) => (y: bigint) => (z: bigint) => bigint} */
 const ch = x => y => z => x & y ^ ~x & z
 
-/** @type {(x: number) => (y: number) => (z: number) => number} */
+/** @type {(x: bigint) => (y: bigint) => (z: bigint) => bigint} */
 const maj = x => y => z => x & y ^ x & z ^ y & z
 
-/** @type {(d: number) => (n: number) => number} */
-const shr = d => n => n >>> d
+/** @type {(d: bigint) => (n: bigint) => bigint} */
+const shr = d => n => (n >> d) & u32Mask
 
-/** @type {(a: number) => (b: number) => (c: number) => (x: number) => number} */
+/** @type {(a: bigint) => (b: bigint) => (c: bigint) => (x: bigint) => bigint} */
 const bigSigma = a => b => c => {
   const ra = rotr(a)
   const rb = rotr(b)
@@ -53,11 +53,11 @@ const bigSigma = a => b => c => {
   return x => ra(x) ^ rb(x) ^ rc(x)
 }
 
-const bigSigma0 = bigSigma(2)(13)(22)
+const bigSigma0 = bigSigma(2n)(13n)(22n)
 
-const bigSigma1 = bigSigma(6)(11)(25)
+const bigSigma1 = bigSigma(6n)(11n)(25n)
 
-/** @type {(a: number) => (b: number) => (c: number) => (x: number) => number} */
+/** @type {(a: bigint) => (b: bigint) => (c: bigint) => (x: bigint) => bigint} */
 const smallSigma = a => b => c => {
   const ra = rotr(a)
   const rb = rotr(b)
@@ -65,9 +65,9 @@ const smallSigma = a => b => c => {
   return x => ra(x) ^ rb(x) ^ sc(x)
 }
 
-const smallSigma0 = smallSigma(7)(18)(3)
+const smallSigma0 = smallSigma(7n)(18n)(3n)
 
-const smallSigma1 = smallSigma(17)(19)(10)
+const smallSigma1 = smallSigma(17n)(19n)(10n)
 
 const u256Mask = (1n << 256n) - 1n
 
@@ -78,25 +78,16 @@ const u32Mask7 = u32Mask << 224n
 /** @type {(uint512: bigint) => (index: bigint) => bigint} */
 const getU32 = uint512 => index => (uint512 >> (index << 5n)) & u32Mask
 
-/** @type {(uint512: bigint) => (index: bigint) => number} */
-const getU32Number = uint512 => index => Number(getU32(uint512)(index))
-
-/** @type {(num: number) => bigint} */
-const toBigInt32 = num => {
-  num |= 0
-  if (num < 0) {
-    num += 0x1_0000_0000
-  }
-  return BigInt(num)
-}
-
-/** @type {(uint512: bigint) => (index: bigint) => (num: number) => bigint} */
-const setU32 = uint512 => index => num => {
-  const uint32 = toBigInt32(num)
+/** @type {(uint512: bigint) => (index: bigint) => (uint32: bigint) => bigint} */
+const setU32 = uint512 => index => uint32 => {
+  uint32 = toBigInt32(uint32)
   index <<= 5n
   const mask = u32Mask << index
   return (uint512 & ~mask) | (uint32 << index)
 }
+
+/** @type {(b: bigint) => bigint} */
+const toBigInt32 = b => b & u32Mask
 
 /** @type {(a: bigint) => (b: bigint) => bigint} */
 const u32x8Add = a => b => {
@@ -117,13 +108,13 @@ const compress = w => {
     let ki = k[i]
     /** @type {(j: bigint) => void} */
     const round = j => {
-      const kij = getU32Number(ki)(j)
-      const wj = getU32Number(w)(j)
-      const a = getU32Number(x)(0n)
-      const d = getU32Number(x)(3n)
-      const e = getU32Number(x)(4n)
-      const t1 = getU32Number(x)(7n) + bigSigma1(e) + ch(e)(getU32Number(x)(5n))(getU32Number(x)(6n)) + kij + wj
-      const t2 = bigSigma0(a) + maj(a)(getU32Number(x)(1n))(getU32Number(x)(2n))
+      const kij = getU32(ki)(j)
+      const wj = getU32(w)(j)
+      const a = getU32(x)(0n)
+      const d = getU32(x)(3n)
+      const e = getU32(x)(4n)
+      const t1 = getU32(x)(7n) + bigSigma1(e) + ch(e)(getU32(x)(5n))(getU32(x)(6n)) + kij + wj
+      const t2 = bigSigma0(a) + maj(a)(getU32(x)(1n))(getU32(x)(2n))
       x <<= 32n
       x &= u256Mask
       x = setU32(x)(4n)(d + t1)
@@ -135,7 +126,7 @@ const compress = w => {
   }
   const wRound16 = () => {
     for (let j = 0; j < 16; j++) {
-      const w0 = smallSigma1(getU32Number(w)(0xen)) + getU32Number(w)(0x9n) + smallSigma0(getU32Number(w)(0x1n)) + getU32Number(w)(0x0n)
+      const w0 = smallSigma1(getU32(w)(0xen)) + getU32(w)(0x9n) + smallSigma0(getU32(w)(0x1n)) + getU32(w)(0x0n)
       w = (w >> 32n) | (toBigInt32(w0) << 480n)
     }
     i++
