@@ -51,7 +51,7 @@ jobs:
       with:
         deno-version: v1.x
     - run: cargo install blockset
-    - run: blockset add .\examples\list.txt
+    - run: blockset add examples\list.txt
     # - run: deno run --quiet --allow-read --allow-env --allow-net --allow-hrtime ./test.mjs
     - run: deno run --quiet --allow-read ./test.mjs
 
@@ -63,5 +63,5 @@ jobs:
     - uses: actions/checkout@v3
     - run: curl -fsSL https://bun.sh/install | bash
     - run: cargo install blockset
-    - run: blockset add .\examples\list.txt
+    - run: blockset add examples\list.txt
     - run: /home/runner/.bun/bin/bun ./test.mjs
