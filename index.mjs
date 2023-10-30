@@ -44,10 +44,10 @@ const getBuffer = ([address, isRoot]) => {
       if (typeof childBuffer === 'string') {
         return childBuffer
       }
-      result = Buffer.concat([result, childBuffer])
+      result = new Uint8Array([ ...result, ...childBuffer ]);
     }
     pushDigest(verificationTree)(tailToDigest(tail))
-    result = Buffer.concat([result, tail])
+    result = new Uint8Array([ ...result, ...tail ]);
   }
   const digest = isRoot ? endTree(verificationTree) : partialEndTree(verificationTree)
   if (digest === null || toAddress(digest) !== address) {
