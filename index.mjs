@@ -126,6 +126,44 @@ const nextState = state => block => {
 
   state.pop()
 
+  let resultBuffer = new Uint8Array()
+  while(true) {
+    const blockLast = state.at(-1)
+    if (blockLast === undefined) {
+      return ['ok', [resultBuffer, null]]
+    }
+
+    const blockData = blockLast[1]
+    if(blockData === null) {
+      return ['ok', [resultBuffer, blockLast[0]]]
+    }
+
+    /** @type {StateTree} */
+    let verificationTree = []
+    const tailLength = blockData[0]
+    if (tailLength === 32) {
+      const data = blockData.subarray(1)
+      for (let byte of data) {
+        pushTree(verificationTree)(byte)
+      }
+      resultBuffer = new Uint8Array([...resultBuffer, ...data]);
+    } else {
+      const tail = blockData.subarray(1, tailLength + 1)
+      state.push([['', false], tail])
+      //todo: reverse cycle
+      for (let i = tailLength + 1; i < blockData.length; i += 28) {
+        let hash = 0n
+        for (let j = 0; j < 28; j++) {
+          hash += BigInt(blockData[i + j]) << BigInt(8 * j)
+        }
+        pushDigest(verificationTree)(hash | (0xffff_ffffn << 224n))
+        const childAddress = toAddress(hash)
+        state.push([[childAddress, false], null])
+      }
+      pushDigest(verificationTree)(tailToDigest(tail))
+    }
+  }
+
   //todo: implement logic from getBuffer
   //todo: push hashes as addresses to state
   //todo: add tail to State as BlockState with reserved address

@@ -41,7 +41,7 @@ const merge = a => b => {
 }
 
 
-/** @type {(tail: Buffer) => bigint} */
+/** @type {(tail: Uint8Array) => bigint} */
 const tailToDigest = tail => {
     if (tail.length > 31) {
         throw 'invalid tail'
