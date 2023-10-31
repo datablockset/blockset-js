@@ -12,6 +12,40 @@ const { tailToDigest } = digest256
  * @typedef {readonly [string, boolean]} Address
  */
 
+/**
+ * @typedef {readonly [Address, Uint8Array]} Block
+ */
+
+/**
+ * @typedef {{
+*  readonly blocks: Block[]
+* }} Input
+*/
+
+/**
+ * @template T
+ * @typedef {readonly['ok', T]} Ok
+ */
+
+/**
+ * @template E
+ * @typedef {readonly['error', E]} Error
+ */
+
+/**
+ * @template T
+ * @template E
+ * @typedef {Ok<T>|Error<E>} Result
+ */
+
+/**
+ * @typedef {readonly [Uint8Array, readonly Address[]]} OkOutput
+ */
+
+/**
+ * @typedef { Result<OkOutput,string> } Output
+*/
+
 /** @type {(address: Address) => string} */
 const getPath = ([address, isRoot]) => {
   const dir = isRoot ? 'roots' : 'parts'
