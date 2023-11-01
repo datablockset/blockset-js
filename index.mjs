@@ -80,7 +80,7 @@ const nextState = state => block => {
   let resultBuffer = new Uint8Array()
 
   while (true) {
-    const blockLast = state.at(-1)
+    const blockLast = state[state.length - 1]
     if (blockLast === undefined) {
       return ['ok', [resultBuffer, null]]
     }
@@ -123,7 +123,7 @@ const nextState = state => block => {
         return ['error', `verification failed ${blockLast[0][0]}`]
       }
 
-      for(let i = childAddresses.length - 1; i >= 0; i--) {
+      for (let i = childAddresses.length - 1; i >= 0; i--) {
         state.push([childAddresses[i], null])
       }
     }
@@ -138,7 +138,7 @@ const get = root => file => {
   let state = []
   let buffer = new Uint8Array()
   try {
-    while(true) {
+    while (true) {
       const path = getPath(address)
       console.log('read file ' + path)
       const data = fs.readFileSync(path)
