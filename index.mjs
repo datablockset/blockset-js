@@ -115,18 +115,8 @@ const nextState = state => block => {
     return ['error', 'unknown address']
   }
 
-  const blockLast = state.at(-1)
-  if (blockLast === undefined) {
-    throw 'unexpected behaviour'
-  }
-  const data = blockLast[1]
-  if (data === null) {
-    return ['ok', [null, blockLast[0]]]
-  }
-
-  state.pop()
-
   let resultBuffer = new Uint8Array()
+
   while (true) {
     const blockLast = state.at(-1)
     if (blockLast === undefined) {
@@ -137,6 +127,8 @@ const nextState = state => block => {
     if (blockData === null) {
       return ['ok', [resultBuffer, blockLast[0]]]
     }
+
+    state.pop()
 
     /** @type {StateTree} */
     let verificationTree = []
@@ -186,6 +178,7 @@ const getNext = root => file => {
   try {
     while(true) {
       const path = getPath(address)
+      console.log('read file ' + path)
       const data = fs.readFileSync(path)
       const next = nextState(state)([address, data])
       if (next[0] === 'error') {
@@ -201,6 +194,8 @@ const getNext = root => file => {
         fs.writeFileSync(file, buffer)
         return 0
       }
+
+      address = next[1][1]
     }
   } catch (err) {
     console.error(err);
@@ -229,6 +224,6 @@ export default {
 }
 
 //get('mnb8j83rgrch8hgb8rbz28d64ec2wranzbzxcy4ebypd8')('out')
-get('vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6')('out')
+getNext('vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6')('out')
 //get('d963x31mwgb8svqe0jmkxh8ar1f8p2dawebnan4aj6hvd')('out')
-//get('vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe')('out')
+//getNext('vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe')('out')
