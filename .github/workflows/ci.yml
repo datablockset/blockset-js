@@ -31,16 +31,16 @@ jobs:
     - run: npm run blockset-prepare
     - run: npm test
 
-  # node-windows:
+  node-windows:
 
-  #   runs-on: windows-latest
+    runs-on: windows-latest
 
-  #   steps:
-  #   - uses: actions/checkout@v3
-  #   - run: npm ci
-  #   - run: cargo install blockset
-  #   - run: npm run blockset-prepare
-  #   - run: npm test
+    steps:
+    - uses: actions/checkout@v3
+    - run: npm ci
+    - run: cargo install blockset
+    - run: npm run blockset-prepare -- --to-posix-eol
+    - run: npm test
 
   deno:
 
