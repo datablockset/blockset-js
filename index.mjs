@@ -45,7 +45,11 @@ const { tailToDigest } = digest256
 */
 
 /**
- * @typedef {[Address, Nullable<Uint8Array>]} BlockState
+ * @typedef { Uint8Array } ReadonlyUint8Array
+ */
+
+/**
+ * @typedef {[Address, Nullable<ReadonlyUint8Array>]} BlockState
  */
 
 /**
