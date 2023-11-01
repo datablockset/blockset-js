@@ -80,7 +80,7 @@ const nextState = state => block => {
   let resultBuffer = new Uint8Array()
 
   while (true) {
-    const blockLast = state[state.length - 1]
+    const blockLast = state.at(-1)
     if (blockLast === undefined) {
       return ['ok', [resultBuffer, null]]
     }
