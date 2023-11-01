@@ -98,7 +98,7 @@ const getBuffer = ([address, isRoot]) => {
 
 /** @type {(state: State) => (block: Block) => boolean} */
 const insertBlock = state => block => {
-  for(let i = 0; i < state.length; i++) {
+  for (let i = 0; i < state.length; i++) {
     if (state[i][0][0] === block[0][0]) {
       state[i][1] = block[1]
       return true
@@ -120,21 +120,21 @@ const nextState = state => block => {
     throw 'unexpected behaviour'
   }
   const data = blockLast[1]
-  if(data === null) {
+  if (data === null) {
     return ['ok', [null, blockLast[0]]]
   }
 
   state.pop()
 
   let resultBuffer = new Uint8Array()
-  while(true) {
+  while (true) {
     const blockLast = state.at(-1)
     if (blockLast === undefined) {
       return ['ok', [resultBuffer, null]]
     }
 
     const blockData = blockLast[1]
-    if(blockData === null) {
+    if (blockData === null) {
       return ['ok', [resultBuffer, blockLast[0]]]
     }
 
@@ -177,6 +177,38 @@ const nextState = state => block => {
 }
 
 /** @type {(root: string) => (file: string) => number} */
+const getNext = root => file => {
+  /** @type {Address} */
+  let address = [root, true]
+  /** @type {State} */
+  let state = []
+  let buffer = new Uint8Array()
+  try {
+    while(true) {
+      const path = getPath(address)
+      const data = fs.readFileSync(path)
+      const next = nextState(state)([address, data])
+      if (next[0] === 'error') {
+        console.error(`${next[1]}`)
+        return -1
+      }
+
+      if (next[1][0] !== null) {
+        buffer = new Uint8Array([...buffer, ...next[1][0]]);
+      }
+
+      if (next[1][1] === null) {
+        fs.writeFileSync(file, buffer)
+        return 0
+      }
+    }
+  } catch (err) {
+    console.error(err);
+    return -1
+  }
+}
+
+/** @type {(root: string) => (file: string) => number} */
 const get = root => file => {
   try {
     const buffer = getBuffer([root, true])
@@ -197,6 +229,6 @@ export default {
 }
 
 //get('mnb8j83rgrch8hgb8rbz28d64ec2wranzbzxcy4ebypd8')('out')
-//get('vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6')('out')
+get('vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6')('out')
 //get('d963x31mwgb8svqe0jmkxh8ar1f8p2dawebnan4aj6hvd')('out')
 //get('vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe')('out')
