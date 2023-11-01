@@ -149,26 +149,31 @@ const nextState = state => block => {
       resultBuffer = new Uint8Array([...resultBuffer, ...data]);
     } else {
       const tail = blockData.subarray(1, tailLength + 1)
-      state.push([['', false], tail])
-      //todo: reverse cycle
-      for (let i = tailLength + 1; i < blockData.length; i += 28) {
+      if (tail.length !== 0) {
+        state.push([['', false], tail])
+      }
+      for (let i = blockData.length - 28; i > tailLength; i -= 28) {
         let hash = 0n
         for (let j = 0; j < 28; j++) {
           hash += BigInt(blockData[i + j]) << BigInt(8 * j)
         }
-        pushDigest(verificationTree)(hash | (0xffff_ffffn << 224n))
+        //todo: in reverse order
+        //pushDigest(verificationTree)(hash | (0xffff_ffffn << 224n))
         const childAddress = toAddress(hash)
         state.push([[childAddress, false], null])
       }
-      pushDigest(verificationTree)(tailToDigest(tail))
+      // pushDigest(verificationTree)(tailToDigest(tail))
+      // const digest = blockLast[0][1] ? endTree(verificationTree) : partialEndTree(verificationTree)
+      // if (digest === null || toAddress(digest) !== blockLast[0][0]) {
+      //   return ['error', `verification failed ${blockLast[0][0]}`]
+      // }
+
+      const blockLast = state.at(-1)
+      if (blockLast === undefined) {
+        return ['ok', [resultBuffer, null]]
+      }
     }
   }
-
-  //todo: implement logic from getBuffer
-  //todo: push hashes as addresses to state
-  //todo: add tail to State as BlockState with reserved address
-
-  throw 'not implemented'
 }
 
 /** @type {(root: string) => (file: string) => number} */
