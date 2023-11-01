@@ -58,44 +58,6 @@ const getPath = ([address, isRoot]) => {
   return `cdt0/${dir}/${address.substring(0, 2)}/${address.substring(2, 4)}/${address.substring(4)}`
 }
 
-/** @type {(address: Address) => Uint8Array | string} */
-const getBuffer = ([address, isRoot]) => {
-  /** @type {StateTree} */
-  let verificationTree = []
-  const path = getPath([address, isRoot])
-  const data = fs.readFileSync(path)
-  const tailLength = data[0]
-  let result = new Uint8Array()
-  if (tailLength === 32) {
-    result = data.subarray(1)
-    for (let byte of result) {
-      pushTree(verificationTree)(byte)
-    }
-  } else {
-    const tail = data.subarray(1, tailLength + 1)
-    for (let i = tailLength + 1; i < data.length; i += 28) {
-      let hash = 0n
-      for (let j = 0; j < 28; j++) {
-        hash += BigInt(data[i + j]) << BigInt(8 * j)
-      }
-      pushDigest(verificationTree)(hash | (0xffff_ffffn << 224n))
-      const childAddress = toAddress(hash)
-      const childBuffer = getBuffer([childAddress, false])
-      if (typeof childBuffer === 'string') {
-        return childBuffer
-      }
-      result = new Uint8Array([...result, ...childBuffer]);
-    }
-    pushDigest(verificationTree)(tailToDigest(tail))
-    result = new Uint8Array([...result, ...tail]);
-  }
-  const digest = isRoot ? endTree(verificationTree) : partialEndTree(verificationTree)
-  if (digest === null || toAddress(digest) !== address) {
-    return address
-  }
-  return result
-}
-
 /** @type {(state: State) => (block: Block) => boolean} */
 const insertBlock = state => block => {
   for (let i = 0; i < state.length; i++) {
@@ -144,32 +106,32 @@ const nextState = state => block => {
       if (tail.length !== 0) {
         state.push([['', false], tail])
       }
-      for (let i = blockData.length - 28; i > tailLength; i -= 28) {
+      /** @type {Address[]} */
+      let childAddresses = []
+      for (let i = tailLength + 1; i < blockData.length; i += 28) {
         let hash = 0n
         for (let j = 0; j < 28; j++) {
           hash += BigInt(blockData[i + j]) << BigInt(8 * j)
         }
-        //todo: in reverse order
-        //pushDigest(verificationTree)(hash | (0xffff_ffffn << 224n))
+        pushDigest(verificationTree)(hash | (0xffff_ffffn << 224n))
         const childAddress = toAddress(hash)
-        state.push([[childAddress, false], null])
+        childAddresses.push([childAddress, false])
       }
-      // pushDigest(verificationTree)(tailToDigest(tail))
-      // const digest = blockLast[0][1] ? endTree(verificationTree) : partialEndTree(verificationTree)
-      // if (digest === null || toAddress(digest) !== blockLast[0][0]) {
-      //   return ['error', `verification failed ${blockLast[0][0]}`]
-      // }
+      pushDigest(verificationTree)(tailToDigest(tail))
+      const digest = blockLast[0][1] ? endTree(verificationTree) : partialEndTree(verificationTree)
+      if (digest === null || toAddress(digest) !== blockLast[0][0]) {
+        return ['error', `verification failed ${blockLast[0][0]}`]
+      }
 
-      const blockLast = state.at(-1)
-      if (blockLast === undefined) {
-        return ['ok', [resultBuffer, null]]
+      for(let i = childAddresses.length - 1; i >= 0; i--) {
+        state.push([childAddresses[i], null])
       }
     }
   }
 }
 
 /** @type {(root: string) => (file: string) => number} */
-const getNext = root => file => {
+const get = root => file => {
   /** @type {Address} */
   let address = [root, true]
   /** @type {State} */
@@ -203,27 +165,11 @@ const getNext = root => file => {
   }
 }
 
-/** @type {(root: string) => (file: string) => number} */
-const get = root => file => {
-  try {
-    const buffer = getBuffer([root, true])
-    if (typeof buffer === 'string') {
-      console.error(`corrupted file with address ${buffer}`)
-      return -1
-    }
-    fs.writeFileSync(file, buffer)
-  } catch (err) {
-    console.error(err);
-    return -1
-  }
-  return 0
-}
-
 export default {
   get
 }
 
 //get('mnb8j83rgrch8hgb8rbz28d64ec2wranzbzxcy4ebypd8')('out')
-getNext('vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6')('out')
+//get('vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6')('out')
 //get('d963x31mwgb8svqe0jmkxh8ar1f8p2dawebnan4aj6hvd')('out')
-//getNext('vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe')('out')
+//get('vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe')('out')
