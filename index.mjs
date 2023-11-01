@@ -3,6 +3,10 @@ import base32 from './base32.mjs'
 import tree from './tree.mjs'
 import digest256 from './digest256.mjs'
 /** @typedef {import('./tree.mjs').State} StateTree */
+/**
+ * @template T
+ * @typedef {import('./subtree.mjs').Nullable<T>} Nullable
+ */
 const { toAddress } = base32
 const { push: pushTree, end: endTree, partialEnd: partialEndTree, pushDigest } = tree
 const { tailToDigest } = digest256
@@ -12,64 +16,157 @@ const { tailToDigest } = digest256
  * @typedef {readonly [string, boolean]} Address
  */
 
+/**
+ * @typedef {[Address, Uint8Array]} Block
+ */
+
+/**
+ * @template T
+ * @typedef {readonly['ok', T]} Ok
+ */
+
+/**
+ * @template E
+ * @typedef {readonly['error', E]} Error
+ */
+
+/**
+ * @template T
+ * @template E
+ * @typedef {Ok<T>|Error<E>} Result
+ */
+
+/**
+ * @typedef {readonly [Nullable<Uint8Array>, Nullable<Address>]} OkOutput
+ */
+
+/**
+ * @typedef { Result<OkOutput,string> } Output
+*/
+
+/**
+ * @typedef { Uint8Array } ReadonlyUint8Array
+ */
+
+/**
+ * @typedef {[Address, Nullable<ReadonlyUint8Array>]} BlockState
+ */
+
+/**
+ * @typedef { BlockState[] } State
+*/
+
 /** @type {(address: Address) => string} */
 const getPath = ([address, isRoot]) => {
   const dir = isRoot ? 'roots' : 'parts'
   return `cdt0/${dir}/${address.substring(0, 2)}/${address.substring(2, 4)}/${address.substring(4)}`
 }
 
-/** @type {(address: Address) => Uint8Array | string} */
-const getBuffer = ([address, isRoot]) => {
-  /** @type {StateTree} */
-  let verificationTree = []
-  const path = getPath([address, isRoot])
-  const data = fs.readFileSync(path)
-  const tailLength = data[0]
-  let result = new Uint8Array()
-  if (tailLength === 32) {
-    result = data.subarray(1)
-    for (let byte of result) {
-      pushTree(verificationTree)(byte)
+/** @type {(state: State) => (block: Block) => boolean} */
+const insertBlock = state => block => {
+  for (let i = 0; i < state.length; i++) {
+    if (state[i][0][0] === block[0][0]) {
+      state[i][1] = block[1]
+      return true
     }
-  } else {
-    const tail = data.subarray(1, tailLength + 1)
-    for (let i = tailLength + 1; i < data.length; i += 28) {
-      let hash = 0n
-      for (let j = 0; j < 28; j++) {
-        hash += BigInt(data[i + j]) << BigInt(8 * j)
-      }
-      pushDigest(verificationTree)(hash | (0xffff_ffffn << 224n))
-      const childAddress = toAddress(hash)
-      const childBuffer = getBuffer([childAddress, false])
-      if (typeof childBuffer === 'string') {
-        return childBuffer
-      }
-      result = new Uint8Array([ ...result, ...childBuffer ]);
+  }
+  return false
+}
+
+/** @type {(state: State) => (block: Block) => Output} */
+const nextState = state => block => {
+  if (state.length === 0) {
+    state.push(block)
+  } else if (!insertBlock(state)(block)) {
+    return ['error', 'unknown address']
+  }
+
+  let resultBuffer = new Uint8Array()
+
+  while (true) {
+    const blockLast = state.at(-1)
+    if (blockLast === undefined) {
+      return ['ok', [resultBuffer, null]]
     }
-    pushDigest(verificationTree)(tailToDigest(tail))
-    result = new Uint8Array([ ...result, ...tail ]);
+
+    const blockData = blockLast[1]
+    if (blockData === null) {
+      return ['ok', [resultBuffer, blockLast[0]]]
+    }
+
+    state.pop()
+
+    /** @type {StateTree} */
+    let verificationTree = []
+    const tailLength = blockData[0]
+    if (tailLength === 32) {
+      const data = blockData.subarray(1)
+      for (let byte of data) {
+        pushTree(verificationTree)(byte)
+      }
+      resultBuffer = new Uint8Array([...resultBuffer, ...data]);
+    } else {
+      const tail = blockData.subarray(1, tailLength + 1)
+      if (tail.length !== 0) {
+        state.push([['', false], tail])
+      }
+      /** @type {Address[]} */
+      let childAddresses = []
+      for (let i = tailLength + 1; i < blockData.length; i += 28) {
+        let hash = 0n
+        for (let j = 0; j < 28; j++) {
+          hash += BigInt(blockData[i + j]) << BigInt(8 * j)
+        }
+        pushDigest(verificationTree)(hash | (0xffff_ffffn << 224n))
+        const childAddress = toAddress(hash)
+        childAddresses.push([childAddress, false])
+      }
+      pushDigest(verificationTree)(tailToDigest(tail))
+      const digest = blockLast[0][1] ? endTree(verificationTree) : partialEndTree(verificationTree)
+      if (digest === null || toAddress(digest) !== blockLast[0][0]) {
+        return ['error', `verification failed ${blockLast[0][0]}`]
+      }
+
+      for (let i = childAddresses.length - 1; i >= 0; i--) {
+        state.push([childAddresses[i], null])
+      }
+    }
   }
-  const digest = isRoot ? endTree(verificationTree) : partialEndTree(verificationTree)
-  if (digest === null || toAddress(digest) !== address) {
-    return address
-  }
-  return result
 }
 
 /** @type {(root: string) => (file: string) => number} */
 const get = root => file => {
+  /** @type {Address} */
+  let address = [root, true]
+  /** @type {State} */
+  let state = []
+  let buffer = new Uint8Array()
   try {
-    const buffer = getBuffer([root, true])
-    if (typeof buffer === 'string') {
-      console.error(`corrupted file with address ${buffer}`)
-      return -1
+    while (true) {
+      const path = getPath(address)
+      console.log('read file ' + path)
+      const data = fs.readFileSync(path)
+      const next = nextState(state)([address, data])
+      if (next[0] === 'error') {
+        console.error(`${next[1]}`)
+        return -1
+      }
+
+      if (next[1][0] !== null) {
+        buffer = new Uint8Array([...buffer, ...next[1][0]]);
+      }
+
+      if (next[1][1] === null) {
+        fs.writeFileSync(file, buffer)
+        return 0
+      }
+
+      address = next[1][1]
     }
-    fs.writeFileSync(file, buffer)
   } catch (err) {
     console.error(err);
     return -1
   }
-  return 0
 }
 
 export default {
