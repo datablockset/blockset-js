@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import fsPromises from 'node:fs/promises'
 import base32 from './base32.mjs'
 import tree from './tree.mjs'
 import digest256 from './digest256.mjs'
@@ -126,6 +127,41 @@ const nextState = state => {
   }
 }
 
+/** @type {(root: [string, string]) => Promise<number>} */
+async function getAsync([root, file]) {
+  /** @type {State} */
+  let state = [[[root, true], null]]
+  let buffer = new Uint8Array()
+  try {
+    while (true) {
+      const blockLast = state.at(-1)
+      if (blockLast === undefined) {
+        fs.writeFileSync(file, buffer)
+        return 0
+      }
+
+      const address = blockLast[0]
+      //todo: get blocks without data and request
+      const path = getPath(address)
+      console.log('read file ' + path)
+      let data = await fsPromises.readFile(path)
+      insertBlock(state)([address, data])
+      const next = nextState(state)
+      if (next[0] === 'error') {
+        console.error(`${next[1]}`)
+        return -1
+      }
+
+      if (next[1] !== null) {
+        buffer = new Uint8Array([...buffer, ...next[1]]);
+      }
+    }
+  } catch (err) {
+    console.error(err);
+    return -1
+  }
+}
+
 /** @type {(root: string) => (file: string) => number} */
 const get = root => file => {
   /** @type {State} */
@@ -138,8 +174,8 @@ const get = root => file => {
         fs.writeFileSync(file, buffer)
         return 0
       }
-      const address = blockLast[0]
 
+      const address = blockLast[0]
       //todo: get blocks without data and request
       const path = getPath(address)
       console.log('read file ' + path)
@@ -170,3 +206,4 @@ export default {
 //get('vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6')('out')
 //get('d963x31mwgb8svqe0jmkxh8ar1f8p2dawebnan4aj6hvd')('out')
 //get('vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe')('out')
+getAsync(['vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe', 'out'])
