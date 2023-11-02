@@ -37,7 +37,7 @@ const { tailToDigest } = digest256
  */
 
 /**
- * @typedef {readonly [Nullable<Uint8Array>, Nullable<Address>]} OkOutput
+ * @typedef {Nullable<Uint8Array>} OkOutput
  */
 
 /**
@@ -86,12 +86,12 @@ const nextState = state => block => {
   while (true) {
     const blockLast = state.at(-1)
     if (blockLast === undefined) {
-      return ['ok', [resultBuffer, null]]
+      return ['ok', resultBuffer]
     }
 
     const blockData = blockLast[1]
     if (blockData === null) {
-      return ['ok', [resultBuffer, blockLast[0]]]
+      return ['ok', resultBuffer]
     }
 
     state.pop()
@@ -152,16 +152,17 @@ const get = root => file => {
         return -1
       }
 
-      if (next[1][0] !== null) {
-        buffer = new Uint8Array([...buffer, ...next[1][0]]);
+      if (next[1] !== null) {
+        buffer = new Uint8Array([...buffer, ...next[1]]);
       }
 
-      if (next[1][1] === null) {
+      const blockLast = state.at(-1)
+      if (blockLast === undefined) {
         fs.writeFileSync(file, buffer)
         return 0
       }
 
-      address = next[1][1]
+      address = blockLast[0]
     }
   } catch (err) {
     console.error(err);
