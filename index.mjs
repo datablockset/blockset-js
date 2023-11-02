@@ -73,14 +73,8 @@ const insertBlock = state => block => {
   return false
 }
 
-/** @type {(state: State) => (block: Block) => Output} */
-const nextState = state => block => {
-  if (state.length === 0) {
-    state.push(block)
-  } else if (!insertBlock(state)(block)) {
-    return ['error', 'unknown address']
-  }
-
+/** @type {(state: State) =>  Output} */
+const nextState = state => {
   let resultBuffer = new Uint8Array()
 
   while (true) {
@@ -139,14 +133,27 @@ const get = root => file => {
   /** @type {Address} */
   let address = [root, true]
   /** @type {State} */
-  let state = []
+  let state = [[address, null]]
   let buffer = new Uint8Array()
   try {
     while (true) {
+      const blockLast = state.at(-1)
+      if (blockLast === undefined) {
+        fs.writeFileSync(file, buffer)
+        return 0
+      }
+      address = blockLast[0]
+
+      //todo: get blocks without data and request
       const path = getPath(address)
       console.log('read file ' + path)
       const data = fs.readFileSync(path)
-      const next = nextState(state)([address, data])
+      //todo: write to state
+      if (!insertBlock(state)([address, data])) {
+        console.error('unknown address')
+        return -1
+      }
+      const next = nextState(state)
       if (next[0] === 'error') {
         console.error(`${next[1]}`)
         return -1
@@ -155,14 +162,6 @@ const get = root => file => {
       if (next[1] !== null) {
         buffer = new Uint8Array([...buffer, ...next[1]]);
       }
-
-      const blockLast = state.at(-1)
-      if (blockLast === undefined) {
-        fs.writeFileSync(file, buffer)
-        return 0
-      }
-
-      address = blockLast[0]
     }
   } catch (err) {
     console.error(err);
