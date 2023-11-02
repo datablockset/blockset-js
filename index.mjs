@@ -130,10 +130,8 @@ const nextState = state => {
 
 /** @type {(root: string) => (file: string) => number} */
 const get = root => file => {
-  /** @type {Address} */
-  let address = [root, true]
   /** @type {State} */
-  let state = [[address, null]]
+  let state = [[[root, true], null]]
   let buffer = new Uint8Array()
   try {
     while (true) {
@@ -142,7 +140,7 @@ const get = root => file => {
         fs.writeFileSync(file, buffer)
         return 0
       }
-      address = blockLast[0]
+      const address = blockLast[0]
 
       //todo: get blocks without data and request
       const path = getPath(address)
