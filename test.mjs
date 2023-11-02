@@ -210,6 +210,20 @@ console.log(`test start`)
 }
 
 {
+
   const exitCode = get('vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6')('out')
   if (exitCode !== 0) { throw exitCode }
+
+  const bufferIn = fs.readFileSync(`examples/list.txt`)
+  const bufferOut = fs.readFileSync(`out`)
+  if (!bufferIn.equals(bufferOut)) { throw 'files are different' }
+}
+
+{
+  const exitCode = get('awt9x8564999k276wap2e5b7n10575ffy946kencva4ve')('out')
+  if (exitCode !== 0) { throw exitCode }
+
+  const bufferIn = fs.readFileSync(`examples/list2.txt`)
+  const bufferOut = fs.readFileSync(`out`)
+  if (!bufferIn.equals(bufferOut)) { throw 'files are different' }
 }
