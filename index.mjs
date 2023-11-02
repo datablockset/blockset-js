@@ -62,15 +62,13 @@ const getPath = ([address, isRoot]) => {
   return `cdt0/${dir}/${address.substring(0, 2)}/${address.substring(2, 4)}/${address.substring(4)}`
 }
 
-/** @type {(state: State) => (block: Block) => boolean} */
+/** @type {(state: State) => (block: Block) => void} */
 const insertBlock = state => block => {
   for (let i = 0; i < state.length; i++) {
     if (state[i][0][0] === block[0][0]) {
       state[i][1] = block[1]
-      return true
     }
   }
-  return false
 }
 
 /** @type {(state: State) =>  Output} */
@@ -147,10 +145,7 @@ const get = root => file => {
       console.log('read file ' + path)
       const data = fs.readFileSync(path)
       //todo: write to state
-      if (!insertBlock(state)([address, data])) {
-        console.error('unknown address')
-        return -1
-      }
+      insertBlock(state)([address, data])
       const next = nextState(state)
       if (next[0] === 'error') {
         console.error(`${next[1]}`)
