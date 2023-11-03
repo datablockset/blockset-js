@@ -222,7 +222,8 @@ const get = root => file => {
 }
 
 export default {
-  get
+  get,
+  getAsync
 }
 
 //get('mnb8j83rgrch8hgb8rbz28d64ec2wranzbzxcy4ebypd8')('out')
