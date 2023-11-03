@@ -57,8 +57,6 @@ const { tailToDigest } = digest256
  * @typedef { BlockState[] } State
 */
 
-const maxRequests = 3
-
 /** @type {(address: Address) => string} */
 const getPath = ([address, isRoot]) => {
   const dir = isRoot ? 'roots' : 'parts'
@@ -134,6 +132,8 @@ async function getAsync([root, file]) {
   /** @type {State} */
   let state = [[[root, true], null]]
   let buffer = new Uint8Array()
+  /** @type {[Address, Promise<Uint8Array>] | null} */
+  let promise = null
   try {
     while (true) {
       const blockLast = state.at(-1)
@@ -142,32 +142,23 @@ async function getAsync([root, file]) {
         return 0
       }
 
-      /** @type {Promise<Uint8Array>[]} */
-      let promises = []
-      /** @type {Block[]} */
-      let blocks = []
-      let index = -1
-      while(promises.length < maxRequests) {
-        const block = state.at(index)
-        if (block === undefined) {
-          break
-        }
-        if (block[1] === null) {
-          const address = block[0]
-          const path = getPath(address)
-          console.log('read file ' + path)
-          const promise = fsPromises.readFile(path)
-          promise.then(data => {
-            blocks.push([address, data])
-          })
-          promises.push(promise)
-        }
-        index--
+      if (promise !== null) {
+        const data = await promise[1]
+        insertBlock(state)([promise[0], data])
       }
 
-      await Promise.all(promises)
-      for (let block of blocks) {
-        insertBlock(state)(block)
+      if (blockLast[1] === null) {
+        const address = blockLast[0]
+        const path = getPath(address)
+        promise = [address, fsPromises.readFile(path)]
+        continue
+      } else {
+        const blockLast1 = state.at(-2)
+        if (blockLast1 !== undefined) {
+          const address = blockLast1[0]
+          const path = getPath(address)
+          promise = [address, fsPromises.readFile(path)]
+        }
       }
 
       console.log('call next state')
@@ -231,4 +222,4 @@ export default {
 //get('d963x31mwgb8svqe0jmkxh8ar1f8p2dawebnan4aj6hvd')('out')
 //get('vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe')('out')
 //get('awt9x8564999k276wap2e5b7n10575ffy946kencva4ve')('out')
-//getAsync(['awt9x8564999k276wap2e5b7n10575ffy946kencva4ve', 'out'])
+getAsync(['awt9x8564999k276wap2e5b7n10575ffy946kencva4ve', 'out'])
