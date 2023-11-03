@@ -232,4 +232,4 @@ export default {
 //get('d963x31mwgb8svqe0jmkxh8ar1f8p2dawebnan4aj6hvd')('out')
 //get('vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe')('out')
 //get('awt9x8564999k276wap2e5b7n10575ffy946kencva4ve')('out')
-getAsync(['awt9x8564999k276wap2e5b7n10575ffy946kencva4ve', 'out'])
+//getAsync(['awt9x8564999k276wap2e5b7n10575ffy946kencva4ve', 'out'])
