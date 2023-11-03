@@ -209,21 +209,33 @@ console.log(`test start`)
   if (result !== 'vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe') { throw result }
 }
 
-{
-
-  const exitCode = get('vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6')('out')
-  if (exitCode !== 0) { throw exitCode }
-
-  const bufferIn = fs.readFileSync(`examples/list.txt`)
-  const bufferOut = fs.readFileSync(`out`)
-  if (!bufferIn.equals(bufferOut)) { throw 'files are different' }
+/** @type {(file: string) => Uint8Array} */
+const readExample = file => {
+  let buffer = fs.readFileSync(file)
+  let temp = []
+  for(let ch of buffer) {
+    if (ch !== 13) {
+      temp.push(ch)
+    }
+  }
+  return new Uint8Array(temp)
 }
 
 {
-  const exitCode = get('awt9x8564999k276wap2e5b7n10575ffy946kencva4ve')('out')
+
+  const exitCode = get('vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6')('_out_list1')
   if (exitCode !== 0) { throw exitCode }
 
-  const bufferIn = fs.readFileSync(`examples/list2.txt`)
-  const bufferOut = fs.readFileSync(`out`)
-  if (!bufferIn.equals(bufferOut)) { throw 'files are different' }
+  const bufferIn = readExample(`examples/list.txt`)
+  const bufferOut = fs.readFileSync(`_out_list1`)
+  if (!bufferOut.equals(bufferIn)) { throw 'files are different' }
+}
+
+{
+  const exitCode = get('awt9x8564999k276wap2e5b7n10575ffy946kencva4ve')('_out_list2')
+  if (exitCode !== 0) { throw exitCode }
+
+  const bufferIn = readExample(`examples/list2.txt`)
+  const bufferOut = fs.readFileSync(`_out_list2`)
+  if (!bufferOut.equals(bufferIn)) { throw 'files are different' }
 }
