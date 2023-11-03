@@ -146,8 +146,9 @@ async function getAsync([root, file]) {
       let promises = []
       /** @type {Block[]} */
       let blocks = []
-      for (let i = 0; i < maxRequests;) {
-        const block = state.at(-i - 1)
+      let index = -1
+      while(promises.length < maxRequests) {
+        const block = state.at(index)
         if (block === undefined) {
           break
         }
@@ -160,8 +161,8 @@ async function getAsync([root, file]) {
             blocks.push([address, data])
           })
           promises.push(promise)
-          i++
         }
+        index--
       }
 
       await Promise.all(promises)
@@ -230,4 +231,5 @@ export default {
 //get('vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6')('out')
 //get('d963x31mwgb8svqe0jmkxh8ar1f8p2dawebnan4aj6hvd')('out')
 //get('vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe')('out')
+//get('awt9x8564999k276wap2e5b7n10575ffy946kencva4ve')('out')
 getAsync(['awt9x8564999k276wap2e5b7n10575ffy946kencva4ve', 'out'])
