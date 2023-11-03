@@ -222,8 +222,15 @@ const readExample = file => {
   return new Uint8Array(temp)
 }
 
-{
+/** @type {(f: () => Promise<void> | void) => Promise<void>} */
+const runTest = async(f) => {
+  const t0 = performance.now();
+  await f()
+  const t1 = performance.now();
+  console.log(`Call to ${f.name} sync took ${t1 - t0} milliseconds.`);
+}
 
+const testGetSync1 = () => {
   const exitCode = get('vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6')('_out_list1')
   if (exitCode !== 0) { throw exitCode }
 
@@ -232,6 +239,7 @@ const readExample = file => {
   if (!bufferOut.equals(bufferIn)) { throw 'files are different' }
 }
 
+const testGetSync2 = () =>
 {
   const exitCode = get('awt9x8564999k276wap2e5b7n10575ffy946kencva4ve')('_out_list2')
   if (exitCode !== 0) { throw exitCode }
@@ -261,8 +269,10 @@ const readExample = file => {
   }
 
   const mainTestAsync = async() => {
-    await testGetAsync1()
-    await testGetAsync2()
+    await runTest(testGetSync1)
+    await runTest(testGetSync2)
+    await runTest(testGetAsync1)
+    await runTest(testGetAsync2)
   }
 
   mainTestAsync()
