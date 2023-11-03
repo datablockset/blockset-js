@@ -57,6 +57,8 @@ const { tailToDigest } = digest256
  * @typedef { BlockState[] } State
 */
 
+const maxRequests = 3
+
 /** @type {(address: Address) => string} */
 const getPath = ([address, isRoot]) => {
   const dir = isRoot ? 'roots' : 'parts'
@@ -140,12 +142,34 @@ async function getAsync([root, file]) {
         return 0
       }
 
-      const address = blockLast[0]
-      //todo: get blocks without data and request
-      const path = getPath(address)
-      console.log('read file ' + path)
-      let data = await fsPromises.readFile(path)
-      insertBlock(state)([address, data])
+      /** @type {Promise<Uint8Array>[]} */
+      let promises = []
+      /** @type {Block[]} */
+      let blocks = []
+      for (let i = 0; i < maxRequests;) {
+        const block = state.at(-i - 1)
+        if (block === undefined) {
+          break
+        }
+        if (block[1] === null) {
+          const address = block[0]
+          const path = getPath(address)
+          console.log('read file ' + path)
+          const promise = fsPromises.readFile(path)
+          promise.then(data => {
+            blocks.push([address, data])
+          })
+          promises.push(promise)
+          i++
+        }
+      }
+
+      await Promise.all(promises)
+      for (let block of blocks) {
+        insertBlock(state)(block)
+      }
+
+      console.log('call next state')
       const next = nextState(state)
       if (next[0] === 'error') {
         console.error(`${next[1]}`)
@@ -206,4 +230,4 @@ export default {
 //get('vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6')('out')
 //get('d963x31mwgb8svqe0jmkxh8ar1f8p2dawebnan4aj6hvd')('out')
 //get('vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe')('out')
-getAsync(['vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe', 'out'])
+getAsync(['awt9x8564999k276wap2e5b7n10575ffy946kencva4ve', 'out'])
