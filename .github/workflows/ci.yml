@@ -39,7 +39,7 @@ jobs:
     - uses: actions/checkout@v3
     - run: npm ci
     - run: cargo install blockset
-    - run: npm run blockset-prepare -- --to-posix-eol
+    - run: npm run blockset-prepare-win
     - run: npm test
 
   deno:
