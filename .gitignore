@@ -131,3 +131,6 @@ dist
 
 # blockset repo
 cdt0
+
+# temporary files
+_*

@@ -5,6 +5,7 @@ import subtree from './subtree.mjs'
 import tree from './tree.mjs'
 import index from './index.mjs'
 import fs from 'node:fs'
+import fsPromises from 'node:fs/promises'
 /** @typedef {import('./subtree.mjs').State} StateSubTree */
 /** @typedef {import('./tree.mjs').State} StateTree */
 const { toAddress, getParityBit } = base32
@@ -12,7 +13,7 @@ const { compress } = sha224
 const { merge, byteToDigest, len } = digest256
 const { highestOne256, height, push: pushSubTree } = subtree
 const { push: pushTree, end: endTree } = tree
-const { get } = index
+const { get, getAsync } = index
 
 console.log(`test start`)
 
@@ -209,7 +210,70 @@ console.log(`test start`)
   if (result !== 'vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe') { throw result }
 }
 
-{
-  const exitCode = get('vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6')('out')
+/** @type {(file: string) => Uint8Array} */
+const readExample = file => {
+  let buffer = fs.readFileSync(file)
+  let temp = []
+  for(let ch of buffer) {
+    if (ch !== 13) {
+      temp.push(ch)
+    }
+  }
+  return new Uint8Array(temp)
+}
+
+/** @type {(f: () => Promise<void> | void) => Promise<void>} */
+const runTest = async(f) => {
+  const t0 = performance.now();
+  await f()
+  const t1 = performance.now();
+  console.log(`Call to ${f.name} sync took ${t1 - t0} milliseconds.`);
+}
+
+const testGetSync1 = () => {
+  const exitCode = get('vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6')('_out_list1')
   if (exitCode !== 0) { throw exitCode }
+
+  const bufferIn = readExample(`examples/list.txt`)
+  const bufferOut = fs.readFileSync(`_out_list1`)
+  if (!bufferOut.equals(bufferIn)) { throw 'files are different' }
+}
+
+const testGetSync2 = () =>
+{
+  const exitCode = get('awt9x8564999k276wap2e5b7n10575ffy946kencva4ve')('_out_list2')
+  if (exitCode !== 0) { throw exitCode }
+
+  const bufferIn = readExample(`examples/list2.txt`)
+  const bufferOut = fs.readFileSync(`_out_list2`)
+  if (!bufferOut.equals(bufferIn)) { throw 'files are different' }
+}
+
+{
+  const testGetAsync1 = async() => {
+    const exitCode = await getAsync(['vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6', '_out_list1_async'])
+    if (exitCode !== 0) { throw exitCode }
+
+    const bufferIn = readExample(`examples/list.txt`)
+    const bufferOut = await fsPromises.readFile(`_out_list1_async`)
+    if (!bufferOut.equals(bufferIn)) { throw 'files are different' }
+  }
+
+  const testGetAsync2 = async() => {
+    const exitCode = await getAsync(['awt9x8564999k276wap2e5b7n10575ffy946kencva4ve', '_out_list2_async'])
+    if (exitCode !== 0) { throw exitCode }
+
+    const bufferIn = readExample(`examples/list2.txt`)
+    const bufferOut = await fsPromises.readFile(`_out_list2_async`)
+    if (!bufferOut.equals(bufferIn)) { throw 'files are different' }
+  }
+
+  const mainTestAsync = async() => {
+    await runTest(testGetSync1)
+    await runTest(testGetSync2)
+    await runTest(testGetAsync1)
+    await runTest(testGetAsync2)
+  }
+
+  mainTestAsync()
 }

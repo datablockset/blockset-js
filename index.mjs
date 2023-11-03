@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import fsPromises from 'node:fs/promises'
 import base32 from './base32.mjs'
 import tree from './tree.mjs'
 import digest256 from './digest256.mjs'
@@ -37,7 +38,7 @@ const { tailToDigest } = digest256
  */
 
 /**
- * @typedef {readonly [Nullable<Uint8Array>, Nullable<Address>]} OkOutput
+ * @typedef {Nullable<Uint8Array>} OkOutput
  */
 
 /**
@@ -62,36 +63,28 @@ const getPath = ([address, isRoot]) => {
   return `cdt0/${dir}/${address.substring(0, 2)}/${address.substring(2, 4)}/${address.substring(4)}`
 }
 
-/** @type {(state: State) => (block: Block) => boolean} */
+/** @type {(state: State) => (block: Block) => void} */
 const insertBlock = state => block => {
   for (let i = 0; i < state.length; i++) {
     if (state[i][0][0] === block[0][0]) {
       state[i][1] = block[1]
-      return true
     }
   }
-  return false
 }
 
-/** @type {(state: State) => (block: Block) => Output} */
-const nextState = state => block => {
-  if (state.length === 0) {
-    state.push(block)
-  } else if (!insertBlock(state)(block)) {
-    return ['error', 'unknown address']
-  }
-
+/** @type {(state: State) =>  Output} */
+const nextState = state => {
   let resultBuffer = new Uint8Array()
 
   while (true) {
     const blockLast = state.at(-1)
     if (blockLast === undefined) {
-      return ['ok', [resultBuffer, null]]
+      return ['ok', resultBuffer]
     }
 
     const blockData = blockLast[1]
     if (blockData === null) {
-      return ['ok', [resultBuffer, blockLast[0]]]
+      return ['ok', resultBuffer]
     }
 
     state.pop()
@@ -134,34 +127,85 @@ const nextState = state => block => {
   }
 }
 
-/** @type {(root: string) => (file: string) => number} */
-const get = root => file => {
-  /** @type {Address} */
-  let address = [root, true]
+/** @type {(root: [string, string]) => Promise<number>} */
+async function getAsync([root, file]) {
   /** @type {State} */
-  let state = []
+  let state = [[[root, true], null]]
   let buffer = new Uint8Array()
+  /** @type {[Address, Promise<Uint8Array>] | null} */
+  let promise = null
   try {
     while (true) {
-      const path = getPath(address)
-      console.log('read file ' + path)
-      const data = fs.readFileSync(path)
-      const next = nextState(state)([address, data])
+      const blockLast = state.at(-1)
+      if (blockLast === undefined) {
+        fs.writeFileSync(file, buffer)
+        return 0
+      }
+
+      if (promise !== null) {
+        const data = await promise[1]
+        insertBlock(state)([promise[0], data])
+      }
+
+      //todo: move to sync function
+      if (blockLast[1] === null) {
+        const address = blockLast[0]
+        const path = getPath(address)
+        promise = [address, fsPromises.readFile(path)]
+        continue
+      } else {
+        const blockLast1 = state.at(-2)
+        if (blockLast1 !== undefined) {
+          const address = blockLast1[0]
+          const path = getPath(address)
+          promise = [address, fsPromises.readFile(path)]
+        }
+      }
+
+      console.log('call next state')
+      const next = nextState(state)
       if (next[0] === 'error') {
         console.error(`${next[1]}`)
         return -1
       }
 
-      if (next[1][0] !== null) {
-        buffer = new Uint8Array([...buffer, ...next[1][0]]);
+      if (next[1] !== null) {
+        buffer = new Uint8Array([...buffer, ...next[1]]);
       }
+    }
+  } catch (err) {
+    console.error(err);
+    return -1
+  }
+}
 
-      if (next[1][1] === null) {
+/** @type {(root: string) => (file: string) => number} */
+const get = root => file => {
+  /** @type {State} */
+  let state = [[[root, true], null]]
+  let buffer = new Uint8Array()
+  try {
+    while (true) {
+      const blockLast = state.at(-1)
+      if (blockLast === undefined) {
         fs.writeFileSync(file, buffer)
         return 0
       }
 
-      address = next[1][1]
+      const address = blockLast[0]
+      const path = getPath(address)
+      console.log('read file ' + path)
+      const data = fs.readFileSync(path)
+      insertBlock(state)([address, data])
+      const next = nextState(state)
+      if (next[0] === 'error') {
+        console.error(`${next[1]}`)
+        return -1
+      }
+
+      if (next[1] !== null) {
+        buffer = new Uint8Array([...buffer, ...next[1]]);
+      }
     }
   } catch (err) {
     console.error(err);
@@ -170,10 +214,13 @@ const get = root => file => {
 }
 
 export default {
-  get
+  get,
+  getAsync
 }
 
 //get('mnb8j83rgrch8hgb8rbz28d64ec2wranzbzxcy4ebypd8')('out')
 //get('vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6')('out')
 //get('d963x31mwgb8svqe0jmkxh8ar1f8p2dawebnan4aj6hvd')('out')
 //get('vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe')('out')
+//get('awt9x8564999k276wap2e5b7n10575ffy946kencva4ve')('out')
+getAsync(['awt9x8564999k276wap2e5b7n10575ffy946kencva4ve', 'out'])
