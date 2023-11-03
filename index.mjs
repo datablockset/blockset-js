@@ -201,11 +201,9 @@ const get = root => file => {
       }
 
       const address = blockLast[0]
-      //todo: get blocks without data and request
       const path = getPath(address)
       console.log('read file ' + path)
       const data = fs.readFileSync(path)
-      //todo: write to state
       insertBlock(state)([address, data])
       const next = nextState(state)
       if (next[0] === 'error') {
