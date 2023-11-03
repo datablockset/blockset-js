@@ -147,6 +147,7 @@ async function getAsync([root, file]) {
         insertBlock(state)([promise[0], data])
       }
 
+      //todo: move to sync function
       if (blockLast[1] === null) {
         const address = blockLast[0]
         const path = getPath(address)
