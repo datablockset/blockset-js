@@ -38,7 +38,7 @@ const { tailToDigest } = digest256
  */
 
 /**
- * @typedef {Nullable<Uint8Array>} OkOutput
+ * @typedef {readonly Uint8Array[]} OkOutput
  */
 
 /**
@@ -74,7 +74,8 @@ const insertBlock = state => block => {
 
 /** @type {(state: State) =>  Output} */
 const nextState = state => {
-  let resultBuffer = new Uint8Array()
+  /** @type {Uint8Array[]} */
+  let resultBuffer = []
 
   while (true) {
     const blockLast = state.at(-1)
@@ -89,6 +90,11 @@ const nextState = state => {
 
     state.pop()
 
+    if (blockLast[0][0] === '') {
+      resultBuffer.push(blockData)
+      continue
+    }
+
     /** @type {StateTree} */
     let verificationTree = []
     const tailLength = blockData[0]
@@ -97,7 +103,7 @@ const nextState = state => {
       for (let byte of data) {
         pushTree(verificationTree)(byte)
       }
-      resultBuffer = new Uint8Array([...resultBuffer, ...data]);
+      resultBuffer.push(data)
     } else {
       const tail = blockData.subarray(1, tailLength + 1)
       if (tail.length !== 0) {
@@ -127,50 +133,59 @@ const nextState = state => {
   }
 }
 
+/** @type {(address: Address) => [Address, Promise<Uint8Array>]} */
+const readFile = address => {
+  const path = getPath(address)
+  return [address, fsPromises.readFile(path)]
+}
+
 /** @type {(root: [string, string]) => Promise<number>} */
 async function getAsync([root, file]) {
+  const tempFile = `_temp_${root}_${file}`
   /** @type {State} */
   let state = [[[root, true], null]]
-  let buffer = new Uint8Array()
   /** @type {[Address, Promise<Uint8Array>] | null} */
-  let promise = null
+  let readPromise = null
+  /** @type {Promise<void> | null} */
+  let writePromise = null
   try {
     while (true) {
       const blockLast = state.at(-1)
       if (blockLast === undefined) {
-        fs.writeFileSync(file, buffer)
+        if (writePromise === null) {
+          return -1
+        }
+        await writePromise
+        await fsPromises.rename(tempFile, file)
         return 0
       }
 
-      if (promise !== null) {
-        const data = await promise[1]
-        insertBlock(state)([promise[0], data])
+      if (readPromise !== null) {
+        const data = await readPromise[1]
+        insertBlock(state)([readPromise[0], data])
       }
 
-      //todo: move to sync function
-      if (blockLast[1] === null) {
-        const address = blockLast[0]
-        const path = getPath(address)
-        promise = [address, fsPromises.readFile(path)]
-        continue
-      } else {
-        const blockLast1 = state.at(-2)
-        if (blockLast1 !== undefined) {
-          const address = blockLast1[0]
-          const path = getPath(address)
-          promise = [address, fsPromises.readFile(path)]
+      for(let i = state.length - 1; i >= 0; i--) {
+        const blockLastI = state[i]
+        if (blockLastI[1] === null) {
+          readPromise = readFile(blockLastI[0])
+          break
         }
       }
 
-      console.log('call next state')
       const next = nextState(state)
       if (next[0] === 'error') {
         console.error(`${next[1]}`)
         return -1
       }
 
-      if (next[1] !== null) {
-        buffer = new Uint8Array([...buffer, ...next[1]]);
+      const writeData = next[1]
+      for (let buffer of writeData) {
+        if (writePromise === null) {
+          writePromise = fsPromises.writeFile(tempFile, buffer)
+        } else {
+          writePromise = writePromise.then(() => fsPromises.appendFile(tempFile, buffer))
+        }
       }
     }
   } catch (err) {
@@ -194,7 +209,6 @@ const get = root => file => {
 
       const address = blockLast[0]
       const path = getPath(address)
-      console.log('read file ' + path)
       const data = fs.readFileSync(path)
       insertBlock(state)([address, data])
       const next = nextState(state)
@@ -203,8 +217,8 @@ const get = root => file => {
         return -1
       }
 
-      if (next[1] !== null) {
-        buffer = new Uint8Array([...buffer, ...next[1]]);
+      for(let w of next[1]) {
+        buffer = new Uint8Array([...buffer, ...w]);
       }
     }
   } catch (err) {
@@ -223,4 +237,4 @@ export default {
 //get('d963x31mwgb8svqe0jmkxh8ar1f8p2dawebnan4aj6hvd')('out')
 //get('vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe')('out')
 //get('awt9x8564999k276wap2e5b7n10575ffy946kencva4ve')('out')
-getAsync(['awt9x8564999k276wap2e5b7n10575ffy946kencva4ve', 'out'])
+//getAsync(['awt9x8564999k276wap2e5b7n10575ffy946kencva4ve', 'out'])

@@ -5,8 +5,8 @@
   "main": "index.mjs",
   "scripts": {
     "tsc": "tsc",
-    "blockset-prepare": "blockset add ./examples/list.txt && blockset add ./examples/list2.txt",
-    "blockset-prepare-win": "blockset add ./examples/list.txt --to-posix-eol && blockset add ./examples/list2.txt --to-posix-eol",
+    "blockset-prepare": "blockset add ./examples/list.txt && blockset add ./examples/list2.txt && blockset add ./examples/repeat.txt",
+    "blockset-prepare-win": "blockset add ./examples/list.txt --to-posix-eol && blockset add ./examples/list2.txt --to-posix-eol && blockset add ./examples/repeat.txt --to-posix-eol",
     "test": "tsc & node --trace-uncaught test.mjs"
   },
   "repository": {

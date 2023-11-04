@@ -227,7 +227,7 @@ const runTest = async(f) => {
   const t0 = performance.now();
   await f()
   const t1 = performance.now();
-  console.log(`Call to ${f.name} sync took ${t1 - t0} milliseconds.`);
+  console.log(`Call to ${f.name} took ${t1 - t0} milliseconds.`);
 }
 
 const testGetSync1 = () => {
@@ -246,6 +246,16 @@ const testGetSync2 = () =>
 
   const bufferIn = readExample(`examples/list2.txt`)
   const bufferOut = fs.readFileSync(`_out_list2`)
+  if (!bufferOut.equals(bufferIn)) { throw 'files are different' }
+}
+
+const testGetSyncRepeat = () =>
+{
+  const exitCode = get('d963x31mwgb8svqe0jmkxh8ar1f8p2dawebnan4aj6hvd')('_out_repeat')
+  if (exitCode !== 0) { throw exitCode }
+
+  const bufferIn = readExample(`examples/repeat.txt`)
+  const bufferOut = fs.readFileSync(`_out_repeat`)
   if (!bufferOut.equals(bufferIn)) { throw 'files are different' }
 }
 
@@ -268,11 +278,22 @@ const testGetSync2 = () =>
     if (!bufferOut.equals(bufferIn)) { throw 'files are different' }
   }
 
+  const testGetAsyncRepeat = async() => {
+    const exitCode = await getAsync(['d963x31mwgb8svqe0jmkxh8ar1f8p2dawebnan4aj6hvd', '_out_repeat_async'])
+    if (exitCode !== 0) { throw exitCode }
+
+    const bufferIn = readExample(`examples/repeat.txt`)
+    const bufferOut = await fsPromises.readFile(`_out_repeat_async`)
+    if (!bufferOut.equals(bufferIn)) { throw 'files are different' }
+  }
+
   const mainTestAsync = async() => {
     await runTest(testGetSync1)
     await runTest(testGetSync2)
+    await runTest(testGetSyncRepeat)
     await runTest(testGetAsync1)
     await runTest(testGetAsync2)
+    await runTest(testGetAsyncRepeat)
   }
 
   mainTestAsync()
