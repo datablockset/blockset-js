@@ -91,7 +91,7 @@ jobs:
     - run: cargo install blockset
     - run: echo "Hello World !" > _example.txt
     - run: blockset add ./_example.txt
-    - run: npx blockset-js a4hxbtcjd916nkcdp23yfmnmakk11r13mytrzm3t559wf _out.txt
+    - run: npx blockset-js hsdfs1zs8fnf810v8f9k6pjdkz7b4y95sembmswac5sjt _out.txt
     - run: blockset add ./_out.txt
     - uses: actions/upload-artifact@v3
       with:
