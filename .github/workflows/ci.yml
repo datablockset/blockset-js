@@ -66,3 +66,30 @@ jobs:
     - run: cargo install blockset
     - run: npm run blockset-prepare
     - run: /home/runner/.bun/bin/bun ./test.mjs
+
+  pack:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - run: npm pack
+    - uses: actions/upload-artifact@v3
+      with:
+        path: blockset-js-0.1.0.tgz
+        name: blockset-js-0.1.0.tgz
+
+  test-install:
+
+    needs: pack
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: blockset-js-0.1.0.tgz
+    - run: npm install -g blockset-js-0.1.0.tgz
+    - run: cargo install blockset
+    - run: echo "Hello World !" > _example.txt
+    - run: blockset add ./_example.txt
+    - run: npx blockset-js hsdfs1zs8fnf810v8f9k6pjdkz7b4y95sembmswac5sjt _out.txt
+    - run: blockset add ./_out.txt
