@@ -93,3 +93,7 @@ jobs:
     - run: blockset add ./_example.txt
     - run: npx blockset-js a4hxbtcjd916nkcdp23yfmnmakk11r13mytrzm3t559wf _out.txt
     - run: blockset add ./_out.txt
+    - uses: actions/upload-artifact@v3
+      with:
+        path: _example.txt
+        name: _example.txt
