@@ -127,6 +127,12 @@ const nextState = state => {
   }
 }
 
+/** @type {(address: Address) => [Address, Promise<Uint8Array>]} */
+const readFile = address => {
+  const path = getPath(address)
+  return [address, fsPromises.readFile(path)]
+}
+
 /** @type {(root: [string, string]) => Promise<number>} */
 async function getAsync([root, file]) {
   /** @type {State} */
@@ -149,16 +155,12 @@ async function getAsync([root, file]) {
 
       //todo: move to sync function
       if (blockLast[1] === null) {
-        const address = blockLast[0]
-        const path = getPath(address)
-        readPromise = [address, fsPromises.readFile(path)]
+        readPromise = readFile(blockLast[0])
         continue
       } else {
         const blockLast1 = state.at(-2)
         if (blockLast1 !== undefined) {
-          const address = blockLast1[0]
-          const path = getPath(address)
-          readPromise = [address, fsPromises.readFile(path)]
+          readPromise = readFile(blockLast1[0])
         }
       }
 
