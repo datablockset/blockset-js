@@ -241,11 +241,11 @@ const testGetSync1 = () => {
 
 const testGetSync2 = () =>
 {
-  const exitCode = get('awt9x8564999k276wap2e5b7n10575ffy946kencva4ve')('_out_list2')
+  const exitCode = get('awt9x8564999k276wap2e5b7n10575ffy946kencva4ve')('examples/_out_list2')
   if (exitCode !== 0) { throw exitCode }
 
   const bufferIn = readExample(`examples/list2.txt`)
-  const bufferOut = fs.readFileSync(`_out_list2`)
+  const bufferOut = fs.readFileSync(`examples/_out_list2`)
   if (!bufferOut.equals(bufferIn)) { throw 'files are different' }
 }
 
@@ -270,11 +270,11 @@ const testGetSyncRepeat = () =>
   }
 
   const testGetAsync2 = async() => {
-    const exitCode = await getAsync(['awt9x8564999k276wap2e5b7n10575ffy946kencva4ve', '_out_list2_async'])
+    const exitCode = await getAsync(['awt9x8564999k276wap2e5b7n10575ffy946kencva4ve', 'examples/_out_list2_async'])
     if (exitCode !== 0) { throw exitCode }
 
     const bufferIn = readExample(`examples/list2.txt`)
-    const bufferOut = await fsPromises.readFile(`_out_list2_async`)
+    const bufferOut = await fsPromises.readFile(`examples/_out_list2_async`)
     if (!bufferOut.equals(bufferIn)) { throw 'files are different' }
   }
 
