@@ -91,7 +91,6 @@ const nextState = state => {
     state.pop()
 
     if (blockLast[0][0] === '') {
-      console.log('tail block')
       resultBuffer.push(blockData)
       continue
     }
@@ -174,7 +173,6 @@ async function getAsync([root, file]) {
         }
       }
 
-      console.log('call next state')
       const next = nextState(state)
       if (next[0] === 'error') {
         console.error(`${next[1]}`)
@@ -211,7 +209,6 @@ const get = root => file => {
 
       const address = blockLast[0]
       const path = getPath(address)
-      console.log('read file ' + path)
       const data = fs.readFileSync(path)
       insertBlock(state)([address, data])
       const next = nextState(state)
@@ -240,4 +237,4 @@ export default {
 //get('d963x31mwgb8svqe0jmkxh8ar1f8p2dawebnan4aj6hvd')('out')
 //get('vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe')('out')
 //get('awt9x8564999k276wap2e5b7n10575ffy946kencva4ve')('out')
-getAsync(['awt9x8564999k276wap2e5b7n10575ffy946kencva4ve', 'out'])
+//getAsync(['awt9x8564999k276wap2e5b7n10575ffy946kencva4ve', 'out'])
