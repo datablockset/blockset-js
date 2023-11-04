@@ -74,3 +74,16 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - run: npm pack
+    - uses: actions/upload-artifact@v3
+      with:
+        path: blockset-js-0.1.0.tgz
+
+  test-install:
+
+    needs: pack
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: blockset-js-0.1.0.tgz
+    - run: npm install -g blockset-js-0.1.0.tgz
