@@ -227,7 +227,7 @@ const runTest = async(f) => {
   const t0 = performance.now();
   await f()
   const t1 = performance.now();
-  console.log(`Call to ${f.name} sync took ${t1 - t0} milliseconds.`);
+  console.log(`Call to ${f.name} took ${t1 - t0} milliseconds.`);
 }
 
 const testGetSync1 = () => {
