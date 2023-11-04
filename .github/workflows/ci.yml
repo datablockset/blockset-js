@@ -66,3 +66,11 @@ jobs:
     - run: cargo install blockset
     - run: npm run blockset-prepare
     - run: /home/runner/.bun/bin/bun ./test.mjs
+
+  pack:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - run: npm pack
