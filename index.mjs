@@ -166,16 +166,11 @@ async function getAsync([root, file]) {
         insertBlock(state)([readPromise[0], data])
       }
 
-      if (blockLast[1] === null) {
-        readPromise = readFile(blockLast[0])
-        continue
-      } else {
-        for(let i = state.length - 2; i >= 0; i--) {
-          const blockLastI = state[i]
-          if (blockLastI[1] === null) {
-            readPromise = readFile(blockLastI[0])
-            break
-          }
+      for(let i = state.length - 1; i >= 0; i--) {
+        const blockLastI = state[i]
+        if (blockLastI[1] === null) {
+          readPromise = readFile(blockLastI[0])
+          break
         }
       }
 
