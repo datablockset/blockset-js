@@ -88,3 +88,8 @@ jobs:
       with:
         name: blockset-js-0.1.0.tgz
     - run: npm install -g blockset-js-0.1.0.tgz
+    - run: cargo install blockset
+    - run: echo "Hello World !" > _example.txt
+    - run: blockset add ./_example.txt
+    - run: npx blockset-js a4hxbtcjd916nkcdp23yfmnmakk11r13mytrzm3t559wf _out.txt
+    - run: blockset add ./_out.txt
