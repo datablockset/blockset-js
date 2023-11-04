@@ -133,7 +133,7 @@ async function getAsync([root, file]) {
   let state = [[[root, true], null]]
   let buffer = new Uint8Array()
   /** @type {[Address, Promise<Uint8Array>] | null} */
-  let promise = null
+  let readPromise = null
   try {
     while (true) {
       const blockLast = state.at(-1)
@@ -142,23 +142,23 @@ async function getAsync([root, file]) {
         return 0
       }
 
-      if (promise !== null) {
-        const data = await promise[1]
-        insertBlock(state)([promise[0], data])
+      if (readPromise !== null) {
+        const data = await readPromise[1]
+        insertBlock(state)([readPromise[0], data])
       }
 
       //todo: move to sync function
       if (blockLast[1] === null) {
         const address = blockLast[0]
         const path = getPath(address)
-        promise = [address, fsPromises.readFile(path)]
+        readPromise = [address, fsPromises.readFile(path)]
         continue
       } else {
         const blockLast1 = state.at(-2)
         if (blockLast1 !== undefined) {
           const address = blockLast1[0]
           const path = getPath(address)
-          promise = [address, fsPromises.readFile(path)]
+          readPromise = [address, fsPromises.readFile(path)]
         }
       }
 
