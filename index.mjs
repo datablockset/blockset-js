@@ -150,9 +150,7 @@ async function getAsync([root, file]) {
           return -1
         }
         await writePromise
-        let data = await fsPromises.readFile(tempFile)
-        await fsPromises.writeFile(file, data)
-        await fsPromises.rm(tempFile)
+        await fsPromises.rename(tempFile, file)
         return 0
       }
 
