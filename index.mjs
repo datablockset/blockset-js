@@ -137,14 +137,18 @@ const readFile = address => {
 async function getAsync([root, file]) {
   /** @type {State} */
   let state = [[[root, true], null]]
-  let buffer = new Uint8Array()
   /** @type {[Address, Promise<Uint8Array>] | null} */
   let readPromise = null
+  /** @type {Promise<void> | null} */
+  let writePromise = null
   try {
     while (true) {
       const blockLast = state.at(-1)
       if (blockLast === undefined) {
-        fs.writeFileSync(file, buffer)
+        if (writePromise === null) {
+          return -1
+        }
+        await writePromise
         return 0
       }
 
@@ -171,8 +175,13 @@ async function getAsync([root, file]) {
         return -1
       }
 
-      if (next[1] !== null) {
-        buffer = new Uint8Array([...buffer, ...next[1]]);
+      const writeData = next[1]
+      if (writeData !== null) {
+        if (writePromise === null) {
+          writePromise = fsPromises.writeFile(file, writeData)
+        } else {
+          writePromise = writePromise.then(() => fsPromises.appendFile(file, writeData))
+        }
       }
     }
   } catch (err) {
