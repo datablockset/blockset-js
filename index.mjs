@@ -135,6 +135,7 @@ const readFile = address => {
 
 /** @type {(root: [string, string]) => Promise<number>} */
 async function getAsync([root, file]) {
+  const tempFile = `_temp_${root}_${file}`
   /** @type {State} */
   let state = [[[root, true], null]]
   /** @type {[Address, Promise<Uint8Array>] | null} */
@@ -149,6 +150,9 @@ async function getAsync([root, file]) {
           return -1
         }
         await writePromise
+        let data = await fsPromises.readFile(tempFile)
+        await fsPromises.writeFile(file, data)
+        await fsPromises.rm(tempFile)
         return 0
       }
 
@@ -178,9 +182,9 @@ async function getAsync([root, file]) {
       const writeData = next[1]
       if (writeData !== null) {
         if (writePromise === null) {
-          writePromise = fsPromises.writeFile(file, writeData)
+          writePromise = fsPromises.writeFile(tempFile, writeData)
         } else {
-          writePromise = writePromise.then(() => fsPromises.appendFile(file, writeData))
+          writePromise = writePromise.then(() => fsPromises.appendFile(tempFile, writeData))
         }
       }
     }
