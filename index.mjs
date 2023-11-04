@@ -141,7 +141,7 @@ const readFile = address => {
 
 /** @type {(root: [string, string]) => Promise<number>} */
 async function getAsync([root, file]) {
-  const tempFile = `_temp_${root}_${file}`
+  const tempFile = `_temp_${root}`
   /** @type {State} */
   let state = [[[root, true], null]]
   /** @type {[Address, Promise<Uint8Array>] | null} */
@@ -231,10 +231,3 @@ export default {
   get,
   getAsync
 }
-
-//get('mnb8j83rgrch8hgb8rbz28d64ec2wranzbzxcy4ebypd8')('out')
-//get('vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6')('out')
-//get('d963x31mwgb8svqe0jmkxh8ar1f8p2dawebnan4aj6hvd')('out')
-//get('vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe')('out')
-//get('awt9x8564999k276wap2e5b7n10575ffy946kencva4ve')('out')
-//getAsync(['awt9x8564999k276wap2e5b7n10575ffy946kencva4ve', 'out'])
