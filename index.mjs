@@ -38,7 +38,7 @@ const { tailToDigest } = digest256
  */
 
 /**
- * @typedef {Nullable<Uint8Array>} OkOutput
+ * @typedef {readonly Uint8Array[]} OkOutput
  */
 
 /**
@@ -74,7 +74,8 @@ const insertBlock = state => block => {
 
 /** @type {(state: State) =>  Output} */
 const nextState = state => {
-  let resultBuffer = new Uint8Array()
+  /** @type {Uint8Array[]} */
+  let resultBuffer = []
 
   while (true) {
     const blockLast = state.at(-1)
@@ -97,11 +98,12 @@ const nextState = state => {
       for (let byte of data) {
         pushTree(verificationTree)(byte)
       }
-      resultBuffer = new Uint8Array([...resultBuffer, ...data]);
+      resultBuffer.push(data)
     } else {
       const tail = blockData.subarray(1, tailLength + 1)
       if (tail.length !== 0) {
         state.push([['', false], tail])
+        //state.push([['', false], new Uint8Array([32, ...tail])])
       }
       /** @type {Address[]} */
       let childAddresses = []
@@ -178,11 +180,11 @@ async function getAsync([root, file]) {
       }
 
       const writeData = next[1]
-      if (writeData !== null) {
+      for (let buffer of writeData) {
         if (writePromise === null) {
-          writePromise = fsPromises.writeFile(tempFile, writeData)
+          writePromise = fsPromises.writeFile(tempFile, buffer)
         } else {
-          writePromise = writePromise.then(() => fsPromises.appendFile(tempFile, writeData))
+          writePromise = writePromise.then(() => fsPromises.appendFile(tempFile, buffer))
         }
       }
     }
@@ -216,8 +218,8 @@ const get = root => file => {
         return -1
       }
 
-      if (next[1] !== null) {
-        buffer = new Uint8Array([...buffer, ...next[1]]);
+      for(let w of next[1]) {
+        buffer = new Uint8Array([...buffer, ...w]);
       }
     }
   } catch (err) {
