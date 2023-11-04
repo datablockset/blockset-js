@@ -90,6 +90,12 @@ const nextState = state => {
 
     state.pop()
 
+    if (blockLast[0][0] === '') {
+      console.log('tail block')
+      resultBuffer.push(blockData)
+      continue
+    }
+
     /** @type {StateTree} */
     let verificationTree = []
     const tailLength = blockData[0]
@@ -103,7 +109,6 @@ const nextState = state => {
       const tail = blockData.subarray(1, tailLength + 1)
       if (tail.length !== 0) {
         state.push([['', false], tail])
-        //state.push([['', false], new Uint8Array([32, ...tail])])
       }
       /** @type {Address[]} */
       let childAddresses = []
@@ -161,14 +166,16 @@ async function getAsync([root, file]) {
         insertBlock(state)([readPromise[0], data])
       }
 
-      //todo: move to sync function
       if (blockLast[1] === null) {
         readPromise = readFile(blockLast[0])
         continue
       } else {
-        const blockLast1 = state.at(-2)
-        if (blockLast1 !== undefined) {
-          readPromise = readFile(blockLast1[0])
+        for(let i = state.length - 2; i >= 0; i--) {
+          const blockLastI = state[i]
+          if (blockLastI[1] === null) {
+            readPromise = readFile(blockLastI[0])
+            break
+          }
         }
       }
 
