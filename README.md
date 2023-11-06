@@ -2,8 +2,6 @@
 
 The `blockset-js` application is a command line program that can retrieve data blocks using a content-dependent tree (CDT) hash function as a universal address of the blocks.
 
-## Usage
-
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/en/download/current).
@@ -23,7 +21,7 @@ To unininstall the `blockset`, run:
 npm uninstall -g blockset-js
 ```
 
-## Commands
+## Usage
 
 Get a file by address:
 
