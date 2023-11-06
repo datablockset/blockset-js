@@ -90,7 +90,7 @@ jobs:
     - uses: actions/download-artifact@v3
       with:
         name: blockset-js.tgz
-    - run: npm install -g blockset-js.tgz
+    - run: npm install -g blockset-js-${{ env.VERSION }}.tgz
     - run: cargo install blockset
     - run: echo "Hello World !" > _example.txt
     - run: blockset add ./_example.txt
