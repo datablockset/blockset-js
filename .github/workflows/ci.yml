@@ -9,6 +9,9 @@ on:
   pull_request:
     branches: [ "main" ]
 
+env:
+  VERSION: 0.1.1
+
 jobs:
   node:
 
@@ -76,8 +79,8 @@ jobs:
     - run: npm pack
     - uses: actions/upload-artifact@v3
       with:
-        path: blockset-js-0.1.0.tgz
-        name: blockset-js-0.1.0.tgz
+        path: blockset-js-$VERSION.tgz
+        name: blockset-js.tgz
 
   test-install:
 
@@ -86,8 +89,8 @@ jobs:
     steps:
     - uses: actions/download-artifact@v3
       with:
-        name: blockset-js-0.1.0.tgz
-    - run: npm install -g blockset-js-0.1.0.tgz
+        name: blockset-js.tgz
+    - run: npm install -g blockset-js.tgz
     - run: cargo install blockset
     - run: echo "Hello World !" > _example.txt
     - run: blockset add ./_example.txt
