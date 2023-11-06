@@ -79,7 +79,7 @@ jobs:
     - run: npm pack
     - uses: actions/upload-artifact@v3
       with:
-        path: blockset-js-$VERSION.tgz
+        path: blockset-js-${{ VERSION }}.tgz
         name: blockset-js.tgz
 
   test-install:
