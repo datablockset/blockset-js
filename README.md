@@ -6,24 +6,21 @@ The `blockset-js` application is a command line program that can retrieve data b
 
 ## Prerequisites
 
-- [Rust](https://www.rust-lang.org/tools/install).
-- For Windows, you may need Visual C++. You can get either
-  - by installing [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/),
-  - or adding [Desktop development with C++](https://learn.microsoft.com/en-us/cpp/build/vscpp-step-0-installation?view=msvc-170) to Visual Studio.
-- [Blockset](https://github.com/datablockset/blockset).
+- [Node.js](https://nodejs.org/en/download/current).
+- [Blockset](https://github.com/datablockset/blockset), if you need to add files to a blockset repository.
 
 ## Installation
 
-To install the latest stable version from [crates.io](https://crates.io/crates/blockset), run:
+To install the latest stable version from [npmjs.com](https://npmjs.com/), run:
 
 ```console
-npm install blockset-js
+npm install -g blockset-js
 ```
 
 To unininstall the `blockset`, run:
 
 ```console
-npm uninstall blockset-js
+npm uninstall -g blockset-js
 ```
 
 ## Commands
