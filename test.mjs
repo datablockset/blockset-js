@@ -13,7 +13,7 @@ const { compress } = sha224
 const { merge, byteToDigest, len } = digest256
 const { highestOne256, height, push: pushSubTree } = subtree
 const { push: pushTree, end: endTree } = tree
-const { get, getAsync } = index
+const { get, getAsync, getSync } = index
 
 console.log(`test start`)
 
@@ -230,7 +230,7 @@ const runTest = async(f) => {
   console.log(`Call to ${f.name} took ${t1 - t0} milliseconds.`);
 }
 
-const testGetSync1 = () => {
+const testGetSyncOld1 = () => {
   const exitCode = get('vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6')('_out_list1')
   if (exitCode !== 0) { throw exitCode }
 
@@ -239,7 +239,7 @@ const testGetSync1 = () => {
   if (!bufferOut.equals(bufferIn)) { throw 'files are different' }
 }
 
-const testGetSync2 = () =>
+const testGetSyncOld2 = () =>
 {
   const exitCode = get('awt9x8564999k276wap2e5b7n10575ffy946kencva4ve')('examples/_out_list2')
   if (exitCode !== 0) { throw exitCode }
@@ -249,13 +249,40 @@ const testGetSync2 = () =>
   if (!bufferOut.equals(bufferIn)) { throw 'files are different' }
 }
 
-const testGetSyncRepeat = () =>
+const testGetSyncOldRepeat = () =>
 {
   const exitCode = get('d963x31mwgb8svqe0jmkxh8ar1f8p2dawebnan4aj6hvd')('_out_repeat')
   if (exitCode !== 0) { throw exitCode }
 
   const bufferIn = readExample(`examples/repeat.txt`)
   const bufferOut = fs.readFileSync(`_out_repeat`)
+  if (!bufferOut.equals(bufferIn)) { throw 'files are different' }
+}
+
+const testGetSync1 = async() => {
+  const exitCode = await getSync(['vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6', '_out_list1_async'])
+  if (exitCode !== 0) { throw exitCode }
+
+  const bufferIn = readExample(`examples/list.txt`)
+  const bufferOut = await fsPromises.readFile(`_out_list1_async`)
+  if (!bufferOut.equals(bufferIn)) { throw 'files are different' }
+}
+
+const testGetSync2 = async() => {
+  const exitCode = await getSync(['awt9x8564999k276wap2e5b7n10575ffy946kencva4ve', 'examples/_out_list2_async'])
+  if (exitCode !== 0) { throw exitCode }
+
+  const bufferIn = readExample(`examples/list2.txt`)
+  const bufferOut = await fsPromises.readFile(`examples/_out_list2_async`)
+  if (!bufferOut.equals(bufferIn)) { throw 'files are different' }
+}
+
+const testGetSyncRepeat = async() => {
+  const exitCode = await getSync(['d963x31mwgb8svqe0jmkxh8ar1f8p2dawebnan4aj6hvd', '_out_repeat_async'])
+  if (exitCode !== 0) { throw exitCode }
+
+  const bufferIn = readExample(`examples/repeat.txt`)
+  const bufferOut = await fsPromises.readFile(`_out_repeat_async`)
   if (!bufferOut.equals(bufferIn)) { throw 'files are different' }
 }
 
@@ -288,6 +315,9 @@ const testGetSyncRepeat = () =>
   }
 
   const mainTestAsync = async() => {
+    await runTest(testGetSyncOld1)
+    await runTest(testGetSyncOld2)
+    await runTest(testGetSyncOldRepeat)
     await runTest(testGetSync1)
     await runTest(testGetSync2)
     await runTest(testGetSyncRepeat)
