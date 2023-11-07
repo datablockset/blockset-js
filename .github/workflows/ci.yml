@@ -100,3 +100,5 @@ jobs:
     - run: blockset add ./_example.txt
     - run: npx blockset-js hsdfs1zs8fnf810v8f9k6pjdkz7b4y95sembmswac5sjt _out.txt
     - run: blockset add ./_out.txt
+    - run: npx blockset-js hsdfs1zs8fnf810v8f9k6pjdkz7b4y95sembmswac5sjt _out.txt 410f5a49.blockset-js-test.pages.dev
+    - run: blockset add ./_out.txt
