@@ -140,13 +140,12 @@ const nextState = state => {
   }
 }
 
-
-/** @type {Provider} */
-const fetchProvider = {
-  read: address => fetch(`https://410f5a49.blockset-js-test.pages.dev/${getPath(address)}`)
+/** @type {(hostName: string) => Provider} */
+const fetchProvider = hostName => ({
+  read: address => fetch(`https://${hostName}/${getPath(address)}`)
     .then(async (resp) => resp.arrayBuffer().then(buffer => new Uint8Array(buffer))),
     write: path => buffer => fsPromises.appendFile(path, buffer)
-}
+})
 
 /** @type {Provider} */
 const asyncFileProvider = {
@@ -169,7 +168,7 @@ const syncFileProvider = {
 // }
 
 /** @type {(provider: Provider) => (root: [string, string]) => Promise<number>} */
-const getAsyncWithProvider = ({ read, write }) => async ([root, file]) => {
+const get = ({ read, write }) => async ([root, file]) => {
   const tempFile = `_temp_${root}`
   /** @type {State} */
   let state = [[[root, true], null]]
@@ -223,48 +222,9 @@ const getAsyncWithProvider = ({ read, write }) => async ([root, file]) => {
   }
 }
 
-
-/** @type {(root: [string, string]) => Promise<number>} */
-const getAsync = getAsyncWithProvider(asyncFileProvider)
-
-/** @type {(root: [string, string]) => Promise<number>} */
-const getSync = getAsyncWithProvider(syncFileProvider)
-
-/** @type {(root: string) => (file: string) => number} */
-const get = root => file => {
-  /** @type {State} */
-  let state = [[[root, true], null]]
-  let buffer = new Uint8Array()
-  try {
-    while (true) {
-      const blockLast = state.at(-1)
-      if (blockLast === undefined) {
-        fs.writeFileSync(file, buffer)
-        return 0
-      }
-
-      const address = blockLast[0]
-      const path = getPath(address)
-      const data = fs.readFileSync(path)
-      insertBlock(state)([address, data])
-      const next = nextState(state)
-      if (next[0] === 'error') {
-        console.error(`${next[1]}`)
-        return -1
-      }
-
-      for (let w of next[1]) {
-        buffer = new Uint8Array([...buffer, ...w]);
-      }
-    }
-  } catch (err) {
-    console.error(err);
-    return -1
-  }
-}
-
 export default {
   get,
-  getAsync,
-  getSync
+  syncFileProvider,
+  asyncFileProvider,
+  fetchProvider
 }

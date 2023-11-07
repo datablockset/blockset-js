@@ -26,5 +26,19 @@ npm uninstall -g blockset-js
 Get a file by address:
 
 ```console
+npx blockset-js <address> <outputFile> [hostName]
+```
+
+### Examples
+
+Get a file from remote storage:
+
+```console
+npx blockset-js awt9x8564999k276wap2e5b7n10575ffy946kencva4ve out.txt 410f5a49.blockset-js-test.pages.dev
+```
+
+Get a file from local storage:
+
+```console
 npx blockset-js hsdfs1zs8fnf810v8f9k6pjdkz7b4y95sembmswac5sjt out.txt
 ```

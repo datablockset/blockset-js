@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 
 import index from './index.mjs'
-const { getAsync } = index
+const { get, asyncFileProvider, fetchProvider } = index
 
 var args = process.argv.slice(2)
-console.log(`args = ${args}`);
 
-if (args.length !== 2) {
-  console.log("Warning: Requires 2 arguments");
-  console.log("npx blockset-js [address] [outputFile]");
+if (args.length < 2) {
+  console.log("Warning: Requires 2 or more arguments");
+  console.log("npx blockset-js <address> <outputFile> [hostName]");
   process.exit();
 }
 
-getAsync([args[0], args[1]])
+const hostName = args[2]
+const provider = hostName === undefined ? asyncFileProvider : fetchProvider(hostName)
+get(provider)([args[0], args[1]])
