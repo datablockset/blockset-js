@@ -34,9 +34,13 @@ jobs:
     - run: npm run blockset-prepare
     - run: npm test
 
-  node-windows:
+  node-os:
 
-    runs-on: windows-latest
+    strategy:
+      matrix:
+        os: [windows-latest, macos-13]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v3
