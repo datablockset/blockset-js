@@ -57,6 +57,10 @@ const { tailToDigest } = digest256
  * @typedef { BlockState[] } State
 */
 
+/**
+ * @typedef {(address: Address) => Promise<Uint8Array>} Provider
+*/
+
 /** @type {(address: Address) => string} */
 const getPath = ([address, isRoot]) => {
   const dir = isRoot ? 'roots' : 'parts'
@@ -133,14 +137,28 @@ const nextState = state => {
   }
 }
 
-/** @type {(address: Address) => [Address, Promise<Uint8Array>]} */
-const readFile = address => {
-  const path = getPath(address)
-  return [address, fsPromises.readFile(path)]
+
+/**
+ * @type {(path: string) => Promise<Uint8Array>}
+ */
+const getFetchPromise = path => {
+  return fetch(`https://410f5a49.blockset-js-test.pages.dev/${path}`)
+    .then(async(resp) => resp.arrayBuffer().then(buffer => new Uint8Array(buffer)))
 }
 
-/** @type {(root: [string, string]) => Promise<number>} */
-async function getAsync([root, file]) {
+/** @type {(address: Address) => Promise<Uint8Array>} */
+const getReadPromise = address => {
+  const path = getPath(address)
+  return fsPromises.access(path)
+    .then(() => fsPromises.readFile(path))
+    .catch(() => getFetchPromise(path))
+}
+
+/** @type {(address: Address) => [Address, Promise<Uint8Array>]} */
+const readFile = address => [address, getReadPromise(address)]
+
+/** @type {(provider: Provider) => (root: [string, string]) => Promise<number>} */
+const getAsyncWithProvider = provider => async([root, file]) => {
   const tempFile = `_temp_${root}`
   /** @type {State} */
   let state = [[[root, true], null]]
@@ -193,6 +211,10 @@ async function getAsync([root, file]) {
     return -1
   }
 }
+
+
+/** @type {(root: [string, string]) => Promise<number>} */
+const getAsync = getAsyncWithProvider(() => { throw 'not implemented' })
 
 /** @type {(root: string) => (file: string) => number} */
 const get = root => file => {
