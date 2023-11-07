@@ -222,11 +222,8 @@ const get = ({ read, write }) => async ([root, file]) => {
   }
 }
 
-const getAsync = get(asyncFileProvider)
-
 export default {
   get,
-  getAsync,
   syncFileProvider,
   asyncFileProvider,
   fetchProvider
