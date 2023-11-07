@@ -4,7 +4,6 @@ import index from './index.mjs'
 const { get, asyncFileProvider, fetchProvider } = index
 
 var args = process.argv.slice(2)
-console.log(`args = ${args}`);
 
 if (args.length < 2) {
   console.log("Warning: Requires 2 or more arguments");
