@@ -138,24 +138,25 @@ const nextState = state => {
 }
 
 
-/**
- * @type {(path: string) => Promise<Uint8Array>}
- */
-const getFetchPromise = path => {
+/** @type {Provider} */
+const fetchProvider = path => {
   return fetch(`https://410f5a49.blockset-js-test.pages.dev/${path}`)
     .then(async(resp) => resp.arrayBuffer().then(buffer => new Uint8Array(buffer)))
 }
 
-/** @type {(address: Address) => Promise<Uint8Array>} */
-const getReadPromise = address => {
+/** @type {Provider} */
+const fileProvider = address => {
   const path = getPath(address)
-  return fsPromises.access(path)
-    .then(() => fsPromises.readFile(path))
-    .catch(() => getFetchPromise(path))
+  return fsPromises.readFile(path)
 }
 
-/** @type {(address: Address) => [Address, Promise<Uint8Array>]} */
-const readFile = address => [address, getReadPromise(address)]
+// /** @type {Provider} */
+// const getReadPromise2 = address => {
+//   const path = getPath(address)
+//   return fsPromises.access(path)
+//     .then(() => fsPromises.readFile(path))
+//     .catch(() => fetchProvider(path))
+// }
 
 /** @type {(provider: Provider) => (root: [string, string]) => Promise<number>} */
 const getAsyncWithProvider = provider => async([root, file]) => {
@@ -186,7 +187,8 @@ const getAsyncWithProvider = provider => async([root, file]) => {
       for(let i = state.length - 1; i >= 0; i--) {
         const blockLastI = state[i]
         if (blockLastI[1] === null) {
-          readPromise = readFile(blockLastI[0])
+          const address = blockLastI[0]
+          readPromise = [address, provider(address)]
           break
         }
       }
@@ -214,7 +216,7 @@ const getAsyncWithProvider = provider => async([root, file]) => {
 
 
 /** @type {(root: [string, string]) => Promise<number>} */
-const getAsync = getAsyncWithProvider(() => { throw 'not implemented' })
+const getAsync = getAsyncWithProvider(fileProvider)
 
 /** @type {(root: string) => (file: string) => number} */
 const get = root => file => {
