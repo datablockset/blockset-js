@@ -58,7 +58,10 @@ const { tailToDigest } = digest256
 */
 
 /**
- * @typedef {(address: Address) => Promise<Uint8Array>} Provider
+ * @typedef {{
+ * readonly read: (address: Address) => Promise<Uint8Array>,
+ * readonly write: (path: string) => (buffer: Uint8Array) => Promise<void>,
+ * }} Provider
 */
 
 /** @type {(address: Address) => string} */
@@ -139,15 +142,22 @@ const nextState = state => {
 
 
 /** @type {Provider} */
-const fetchProvider = path => {
-  return fetch(`https://410f5a49.blockset-js-test.pages.dev/${path}`)
-    .then(async(resp) => resp.arrayBuffer().then(buffer => new Uint8Array(buffer)))
+const fetchProvider = {
+  read: address => fetch(`https://410f5a49.blockset-js-test.pages.dev/${getPath(address)}`)
+    .then(async (resp) => resp.arrayBuffer().then(buffer => new Uint8Array(buffer))),
+    write: path => buffer => fsPromises.appendFile(path, buffer)
 }
 
 /** @type {Provider} */
-const fileProvider = address => {
-  const path = getPath(address)
-  return fsPromises.readFile(path)
+const asyncFileProvider = {
+  read: address => fsPromises.readFile(getPath(address)),
+  write: path => buffer => fsPromises.appendFile(path, buffer)
+}
+
+/** @type {Provider} */
+const syncFileProvider = {
+  read: address => Promise.resolve(fs.readFileSync(getPath(address))),
+  write: path => buffer => Promise.resolve(fs.appendFileSync(path, buffer))
 }
 
 // /** @type {Provider} */
@@ -159,7 +169,7 @@ const fileProvider = address => {
 // }
 
 /** @type {(provider: Provider) => (root: [string, string]) => Promise<number>} */
-const getAsyncWithProvider = provider => async([root, file]) => {
+const getAsyncWithProvider = ({ read, write }) => async ([root, file]) => {
   const tempFile = `_temp_${root}`
   /** @type {State} */
   let state = [[[root, true], null]]
@@ -184,11 +194,11 @@ const getAsyncWithProvider = provider => async([root, file]) => {
         insertBlock(state)([readPromise[0], data])
       }
 
-      for(let i = state.length - 1; i >= 0; i--) {
+      for (let i = state.length - 1; i >= 0; i--) {
         const blockLastI = state[i]
         if (blockLastI[1] === null) {
           const address = blockLastI[0]
-          readPromise = [address, provider(address)]
+          readPromise = [address, read(address)]
           break
         }
       }
@@ -202,10 +212,9 @@ const getAsyncWithProvider = provider => async([root, file]) => {
       const writeData = next[1]
       for (let buffer of writeData) {
         if (writePromise === null) {
-          writePromise = fsPromises.writeFile(tempFile, buffer)
-        } else {
-          writePromise = writePromise.then(() => fsPromises.appendFile(tempFile, buffer))
+          writePromise = fsPromises.writeFile(tempFile, new Uint8Array())
         }
+        writePromise = writePromise.then(() => write(tempFile)(buffer))
       }
     }
   } catch (err) {
@@ -216,7 +225,10 @@ const getAsyncWithProvider = provider => async([root, file]) => {
 
 
 /** @type {(root: [string, string]) => Promise<number>} */
-const getAsync = getAsyncWithProvider(fileProvider)
+const getAsync = getAsyncWithProvider(asyncFileProvider)
+
+/** @type {(root: [string, string]) => Promise<number>} */
+const getSync = getAsyncWithProvider(syncFileProvider)
 
 /** @type {(root: string) => (file: string) => number} */
 const get = root => file => {
@@ -241,7 +253,7 @@ const get = root => file => {
         return -1
       }
 
-      for(let w of next[1]) {
+      for (let w of next[1]) {
         buffer = new Uint8Array([...buffer, ...w]);
       }
     }
@@ -253,5 +265,6 @@ const get = root => file => {
 
 export default {
   get,
-  getAsync
+  getAsync,
+  getSync
 }
