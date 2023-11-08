@@ -20,7 +20,7 @@ document.getElementById('download').addEventListener('click', () => {
     document.getElementById('log').innerText += `write ${b.length}\n`
       buffer = new Uint8Array([...buffer, ...b])
   }
-  get({ read: fRead, write })(hash).then(exitCode => {
+  get({ read, write })(hash).then(exitCode => {
     const innerText = exitCode === null ? new TextDecoder().decode(buffer) : `error exit code = ${exitCode}`
     // @ts-ignore
     document.getElementById('output').innerText = innerText
