@@ -1,9 +1,6 @@
-import fs from 'node:fs'
-import fsPromises from 'node:fs/promises'
 import base32 from './base32.mjs'
 import tree from './tree.mjs'
 import digest256 from './digest256.mjs'
-import getModule from './get.mjs'
 /** @typedef {import('./tree.mjs').State} StateTree */
 /**
  * @template T
@@ -12,7 +9,6 @@ import getModule from './get.mjs'
 const { toAddress } = base32
 const { push: pushTree, end: endTree, partialEnd: partialEndTree, pushDigest } = tree
 const { tailToDigest } = digest256
-const { get, fetchRead } = getModule
 
 /**
  * second element is root flag
@@ -62,7 +58,7 @@ const { get, fetchRead } = getModule
 /**
  * @typedef {{
  * readonly read: (address: Address) => Promise<Uint8Array>,
- * readonly write: (path: string) => (buffer: Uint8Array) => Promise<void>,
+ * readonly write: (buffer: Uint8Array) => Promise<void>,
  * }} Provider
 */
 
@@ -142,42 +138,62 @@ const nextState = state => {
   }
 }
 
-/** @type {(hostName: string) => Provider} */
-const fetchProvider = hostName => ({
-  read: fetchRead(hostName),
-  write: path => buffer => fsPromises.appendFile(path, buffer)
-})
+/** @type {(hostName: string) => (address: Address) => Promise<Uint8Array>} */
+const fetchRead = hostName => address => fetch(`https://${hostName}/${getPath(address)}`)
+    .then(async (resp) => resp.arrayBuffer().then(buffer => new Uint8Array(buffer)))
 
-/** @type {Provider} */
-const asyncFileProvider = {
-  read: address => fsPromises.readFile(getPath(address)),
-  write: path => buffer => fsPromises.appendFile(path, buffer)
-}
+/** @type {(provider: Provider) => (root: string) => Promise<string | null>} */
+const get = ({ read, write }) => async (root) => {
+  /** @type {State} */
+  let state = [[[root, true], null]]
+  /** @type {[Address, Promise<Uint8Array>] | null} */
+  let readPromise = null
+  /** @type {Promise<void> | null} */
+  let writePromise = null
+  try {
+    while (true) {
+      const blockLast = state.at(-1)
+      if (blockLast === undefined) {
+        if (writePromise === null) {
+          return 'unexpected behaviour'
+        }
+        await writePromise
+        return null
+      }
 
-/** @type {Provider} */
-const syncFileProvider = {
-  read: address => Promise.resolve(fs.readFileSync(getPath(address))),
-  write: path => buffer => Promise.resolve(fs.appendFileSync(path, buffer))
-}
+      if (readPromise !== null) {
+        const data = await readPromise[1]
+        insertBlock(state)([readPromise[0], data])
+      }
 
-/** @type {(provider: Provider) => (root: [string, string]) => Promise<number>} */
-const getLocal = ({ read, write }) => async ([root, file]) => {
-  const tempFile = `_temp_${root}`
-  await fsPromises.writeFile(tempFile, new Uint8Array())
-  /** @type {(buffer: Uint8Array) => Promise<void>} */
-  const write = buffer => fsPromises.appendFile(tempFile, buffer)
-  const error = await get({ read, write })(root)
-  if (error !== null) {
-    console.error(error)
-    return -1
+      for (let i = state.length - 1; i >= 0; i--) {
+        const blockLastI = state[i]
+        if (blockLastI[1] === null) {
+          const address = blockLastI[0]
+          readPromise = [address, read(address)]
+          break
+        }
+      }
+
+      const next = nextState(state)
+      if (next[0] === 'error') {
+        return `${next[1]}`
+      }
+
+      const writeData = next[1]
+      for (let buffer of writeData) {
+        if (writePromise === null) {
+          writePromise = Promise.resolve()
+        }
+        writePromise = writePromise.then(() => write(buffer))
+      }
+    }
+  } catch (err) {
+    return `${err}`
   }
-  await fsPromises.rename(tempFile, file)
-  return 0
 }
 
 export default {
-  get: getLocal,
-  syncFileProvider,
-  asyncFileProvider,
-  fetchProvider
+  get,
+  fetchRead
 }
