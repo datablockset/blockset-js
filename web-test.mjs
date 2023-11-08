@@ -1,3 +1,6 @@
+import getModule from './get.mjs'
+const { get } = getModule
+
 // @ts-ignore
 document.getElementById('download').addEventListener('click', () => {
   // @ts-ignore
