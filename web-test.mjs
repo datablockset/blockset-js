@@ -5,9 +5,11 @@ const { get, fetchRead } = getModule
 // @ts-ignore
 document.getElementById('download').addEventListener('click', () => {
   // @ts-ignore
-  const hash = document.getElementById('input').value
+  const hash = document.getElementById('input-hash').value
+  // @ts-ignore
+  const host = document.getElementById('input-host').value
   let buffer = new Uint8Array()
-  const fRead = fetchRead('410f5a49.blockset-js-test.pages.dev')
+  const fRead = fetchRead(host)
   /** @type {(address: Address) => Promise<Uint8Array>} */
   const read = address => {
     // @ts-ignore
