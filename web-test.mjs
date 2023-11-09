@@ -34,14 +34,14 @@ document.getElementById('download').addEventListener('click', () => {
       const image = new Blob([buffer], { type: 'image/jpeg' });
       const imageUrl = URL.createObjectURL(image);
       // @ts-ignore
-      document.getElementById('output-image').style.visibility = 'visible'
+      document.getElementById('output-image').style.display = 'block'
       // @ts-ignore
       document.getElementById('output-image').src = imageUrl;
       return
     }
 
     // @ts-ignore
-    document.getElementById('output-text').style.visibility = 'visible'
+    document.getElementById('output-text').style.display = 'block'
     // @ts-ignore
     document.getElementById('output-text').innerText =  new TextDecoder().decode(buffer)
   })
@@ -49,7 +49,7 @@ document.getElementById('download').addEventListener('click', () => {
 
 const reset = () => {
   // @ts-ignore
-  document.getElementById('output-image').style.visibility = 'hidden'
+  document.getElementById('output-image').style.display = 'none'
   // @ts-ignore
-  document.getElementById('output-text').style.visibility = 'hidden'
+  document.getElementById('output-text').style.display = 'none'
 }
