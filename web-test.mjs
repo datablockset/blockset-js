@@ -23,8 +23,12 @@ document.getElementById('download').addEventListener('click', () => {
       buffer = new Uint8Array([...buffer, ...b])
   }
   get({ read, write })(hash).then(exitCode => {
-    const innerText = exitCode === null ? new TextDecoder().decode(buffer) : `error exit code = ${exitCode}`
+    const image = new Blob([buffer], { type: 'image/jpeg' });
+    const imageUrl = URL.createObjectURL(image);
     // @ts-ignore
-    document.getElementById('output').innerText = innerText
+    document.getElementById('image').src = imageUrl;
+    // const innerText = exitCode === null ? new TextDecoder().decode(buffer) : `error exit code = ${exitCode}`
+    // // @ts-ignore
+    // document.getElementById('output').innerText = innerText
   })
 });
