@@ -4,6 +4,7 @@ const { get, fetchRead } = getModule
 
 // @ts-ignore
 document.getElementById('download').addEventListener('click', () => {
+  reset()
   // @ts-ignore
   const hash = document.getElementById('input-hash').value
   // @ts-ignore
@@ -23,12 +24,30 @@ document.getElementById('download').addEventListener('click', () => {
       buffer = new Uint8Array([...buffer, ...b])
   }
   get({ read, write })(hash).then(exitCode => {
-    const image = new Blob([buffer], { type: 'image/jpeg' });
-    const imageUrl = URL.createObjectURL(image);
+    if (exitCode === null) {
+      // @ts-ignore
+      document.getElementById('log').innerText += `error exit code = ${exitCode}`
+      return
+    }
+
+    if (buffer[0] === 0xff && buffer[1] === 0xd8) {
+      const image = new Blob([buffer], { type: 'image/jpeg' });
+      const imageUrl = URL.createObjectURL(image);
+      // @ts-ignore
+      document.getElementById('output-image').style.visibility = 'visible'
+      // @ts-ignore
+      document.getElementById('output-image').src = imageUrl;
+      return
+    }
+
     // @ts-ignore
-    document.getElementById('image').src = imageUrl;
-    // const innerText = exitCode === null ? new TextDecoder().decode(buffer) : `error exit code = ${exitCode}`
-    // // @ts-ignore
-    // document.getElementById('output').innerText = innerText
+    document.getElementById('output-text').innerText =  new TextDecoder().decode(buffer)
   })
 });
+
+const reset = () => {
+  // @ts-ignore
+  document.getElementById('output-image').style.visibility = 'hidden'
+  // @ts-ignore
+  document.getElementById('output-text').innerText = ''
+}
