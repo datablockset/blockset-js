@@ -24,7 +24,7 @@ document.getElementById('download').addEventListener('click', () => {
       buffer = new Uint8Array([...buffer, ...b])
   }
   get({ read, write })(hash).then(exitCode => {
-    if (exitCode === null) {
+    if (exitCode !== null) {
       // @ts-ignore
       document.getElementById('log').innerText += `error exit code = ${exitCode}`
       return
