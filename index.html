@@ -4,13 +4,23 @@
     <link rel="stylesheet" href="main.css">
   </head>
   <body>
-Hash: <input id="input-hash" size="50" value="awt9x8564999k276wap2e5b7n10575ffy946kencva4ve"/>
+Hash: <input id="input-hash" size="50" list="exampleHashes"/>
+<datalist id="exampleHashes">
+  <option>awt9x8564999k276wap2e5b7n10575ffy946kencva4ve</option>
+  <option>8bhjsgmhskk423h10k2eezkj32y6vwq3hm7f0rzcmypat</option>
+</datalist>
 <br>
-Host: <input id="input-host" size="50" value="410f5a49.blockset-js-test.pages.dev"/>
+Host: <input id="input-host" size="50" value="65ceeb32.blockset-js-test.pages.dev"/>
 <br>
-<button id="download">Download</button>
-    <pre id="log"></pre>
-    <pre id="output"></pre>
+<button id="download" height="10">Download</button>
+<br>
+Log:
+<br>
+    <pre id="log" style="height: 5pc; overflow-y: scroll; background-color: lightgray;"></pre>
+Output:
+<br>
+    <img id="output-image" style="display: none;" alt="Image">
+    <pre id="output-text" style="display: none; height: 30pc; overflow-y: scroll; background-color: lightgray;"></pre>
   </body>
   <script type="module" src="web-test.mjs"></script>
 </html>
