@@ -41,6 +41,8 @@ document.getElementById('download').addEventListener('click', () => {
     }
 
     // @ts-ignore
+    document.getElementById('output-text').style.visibility = 'visible'
+    // @ts-ignore
     document.getElementById('output-text').innerText =  new TextDecoder().decode(buffer)
   })
 });
@@ -49,5 +51,5 @@ const reset = () => {
   // @ts-ignore
   document.getElementById('output-image').style.visibility = 'hidden'
   // @ts-ignore
-  document.getElementById('output-text').innerText = ''
+  document.getElementById('output-text').style.visibility = 'hidden'
 }
