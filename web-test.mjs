@@ -26,7 +26,7 @@ document.getElementById('download').addEventListener('click', () => {
   get({ read, write })(hash).then(exitCode => {
     if (exitCode !== null) {
       // @ts-ignore
-      document.getElementById('log').innerText += `error exit code = ${exitCode}`
+      document.getElementById('log').innerText += `error exit code = ${exitCode}\n`
       return
     }
 
