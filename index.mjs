@@ -1,4 +1,3 @@
-import { writeFile } from 'fs'
 import getModule from './get.mjs'
 import ioModule from './io.mjs'
 /** @typedef {import('./tree.mjs').State} StateTree */
