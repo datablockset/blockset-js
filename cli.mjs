@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 
 import index from './index.mjs'
-const { get, asyncFileProvider, fetchProvider } = index
+import io from './io.mjs'
+const { get } = index
+const { asyncFileProvider, fetchProvider } = io
 
 var args = process.argv.slice(2)
 

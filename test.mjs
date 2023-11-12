@@ -4,6 +4,7 @@ import digest256 from './digest256.mjs'
 import subtree from './subtree.mjs'
 import tree from './tree.mjs'
 import index from './index.mjs'
+import io from './io.mjs'
 import fs from 'node:fs'
 import fsPromises from 'node:fs/promises'
 /** @typedef {import('./subtree.mjs').State} StateSubTree */
@@ -14,7 +15,8 @@ const { compress } = sha224
 const { merge, byteToDigest, len } = digest256
 const { highestOne256, height, push: pushSubTree } = subtree
 const { push: pushTree, end: endTree } = tree
-const { get, syncFileProvider, asyncFileProvider, fetchProvider } = index
+const { get } = index
+const { syncFileProvider, asyncFileProvider, fetchProvider } = io
 
 console.log(`test start`)
 
