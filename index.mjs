@@ -1,5 +1,4 @@
 import getModule from './get.mjs'
-import ioModule from './io.mjs'
 /** @typedef {import('./tree.mjs').State} StateTree */
 /**
  * @template T
@@ -8,12 +7,11 @@ import ioModule from './io.mjs'
 /** @typedef {import('./get.mjs').Address} Address */
 /** @typedef {import('./io.mjs').Provider} Provider */
 const { get } = getModule
-const { createFile, renameFile } = ioModule
 
 /** @type {(provider: Provider) => (root: [string, string]) => Promise<number>} */
-const getLocal = ({ read, write }) => async ([root, file]) => {
+const getLocal = ({ read, write, create, rename }) => async ([root, file]) => {
   const tempFile = `_temp_${root}`
-  await createFile(tempFile)
+  await create(tempFile)
   /** @type {(buffer: Uint8Array) => Promise<void>} */
   const writeTempFile = buffer => write(tempFile)(buffer)
   const error = await get({ read, write: writeTempFile })(root)
@@ -21,7 +19,7 @@ const getLocal = ({ read, write }) => async ([root, file]) => {
     console.error(error)
     return -1
   }
-  await renameFile(tempFile)(file)
+  await rename(tempFile)(file)
   return 0
 }
 

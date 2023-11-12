@@ -6,6 +6,8 @@ import fsPromises from 'node:fs/promises'
  * @typedef {{
 * readonly read: (address: Address) => Promise<Uint8Array>,
 * readonly write: (path: string) => (buffer: Uint8Array) => Promise<void>,
+* readonly create: (path: string) => Promise<void>,
+* readonly rename: (oldPath: string) => (newPath: string) => Promise<void>
 * }} Provider
 */
 
@@ -40,19 +42,25 @@ const fetchRead = hostName => address => fetch(`https://${hostName}/${getPath(ad
 /** @type {(hostName: string) => Provider} */
 const fetchProvider = hostName => ({
   read: fetchRead(hostName),
-  write: path => buffer => appendFile(path)(buffer)
+  write: path => buffer => appendFile(path)(buffer),
+  create: path => createFile(path),
+  rename: oldPath => newPath => renameFile(oldPath)(newPath)
 })
 
 /** @type {Provider} */
 const asyncFileProvider = {
   read: address => readFile(getPath(address)),
-  write: path => buffer => appendFile(path)(buffer)
+  write: path => buffer => appendFile(path)(buffer),
+  create: path => createFile(path),
+  rename: oldPath => newPath => renameFile(oldPath)(newPath)
 }
 
 /** @type {Provider} */
 const syncFileProvider = {
   read: address => Promise.resolve(readFileSync(getPath(address))),
-  write: path => buffer => Promise.resolve(appendFileSync(path)(buffer))
+  write: path => buffer => Promise.resolve(appendFileSync(path)(buffer)),
+  create: path => createFile(path),
+  rename: oldPath => newPath => renameFile(oldPath)(newPath)
 }
 
 export default {
