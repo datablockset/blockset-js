@@ -4,19 +4,19 @@ import digest256 from './digest256.mjs'
 import subtree from './subtree.mjs'
 import tree from './tree.mjs'
 import index from './index.mjs'
-import io from './io.mjs'
+import ioNode from './io/node.mjs'
 import fs from 'node:fs'
 import fsPromises from 'node:fs/promises'
 /** @typedef {import('./subtree.mjs').State} StateSubTree */
 /** @typedef {import('./tree.mjs').State} StateTree */
-/** @typedef {import('./index.mjs').Provider} Provider */
+/** @typedef {import('./io/io.mjs').IO} IO */
 const { toAddress, getParityBit } = base32
 const { compress } = sha224
 const { merge, byteToDigest, len } = digest256
 const { highestOne256, height, push: pushSubTree } = subtree
 const { push: pushTree, end: endTree } = tree
-const { get } = index
-const { syncFileProvider, asyncFileProvider, fetchProvider } = io
+const { getLocal, getRemote } = index
+const { node, nodeSync } = ioNode
 
 console.log(`test start`)
 
@@ -233,9 +233,11 @@ const runTest = async (f) => {
   console.log(`Call to ${f.name} took ${t1 - t0} milliseconds.`);
 }
 
-/** @type {(provider: Provider) => Promise<void>} */
-const runTestsGet = async (provider) => {
-  const getWithProvider = get(provider)
+/** @typedef {(io: IO) => (root: [string, string]) => Promise<number>} GetFunc*/
+
+/** @type {(io: IO) => (getFunc: GetFunc) => Promise<void>} */
+const runTestsGet = io => async (getFunc) => {
+  const getWithProvider = getFunc(io)
   const testGet1 = async () => {
     const exitCode = await getWithProvider(['vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6', '_out_list1_async'])
     if (exitCode !== 0) { throw exitCode }
@@ -268,15 +270,13 @@ const runTestsGet = async (provider) => {
   await runTest(testGetRepeat)
 }
 
-const testFetchProvider = fetchProvider('410f5a49.blockset-js-test.pages.dev')
-
 const mainTestAsync = async () => {
   console.log('sync provider')
-  await runTestsGet(syncFileProvider)
+  await runTestsGet(nodeSync)(getLocal)
   console.log('async provider')
-  await runTestsGet(asyncFileProvider)
+  await runTestsGet(node)(getLocal)
   console.log('fetch provider')
-  await runTestsGet(testFetchProvider)
+  await runTestsGet(node)(getRemote('410f5a49.blockset-js-test.pages.dev'))
 }
 
 mainTestAsync()

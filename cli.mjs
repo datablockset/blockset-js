@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 import index from './index.mjs'
-import io from './io.mjs'
-const { get } = index
-const { asyncFileProvider, fetchProvider } = io
+import ioNode from './io/node.mjs'
+const { getLocal, getRemote } = index
+const { node } = ioNode
 
 var args = process.argv.slice(2)
 
@@ -14,5 +14,5 @@ if (args.length < 2) {
 }
 
 const hostName = args[2]
-const provider = hostName === undefined ? asyncFileProvider : fetchProvider(hostName)
-get(provider)([args[0], args[1]])
+const getFunc = hostName === undefined ? getLocal : getRemote(hostName)
+getFunc(node)([args[0], args[1]])

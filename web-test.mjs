@@ -1,6 +1,10 @@
 import getModule from './get.mjs'
+import ioWeb from './io/web.mjs'
+import index from './index.mjs'
 /** @typedef {import('./get.mjs').Address} Address */
-const { get, fetchRead } = getModule
+const { get } = getModule
+const { web } = ioWeb
+const { fetchRead } = index
 
 // @ts-ignore
 document.getElementById('download').addEventListener('click', () => {
@@ -10,7 +14,7 @@ document.getElementById('download').addEventListener('click', () => {
   // @ts-ignore
   const host = document.getElementById('input-host').value
   let buffer = new Uint8Array()
-  const fRead = fetchRead(host)
+  const fRead = fetchRead(host)(web)
   /** @type {(address: Address) => Promise<Uint8Array>} */
   const read = address => {
     // @ts-ignore
