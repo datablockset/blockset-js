@@ -8,7 +8,8 @@ const node = {
   append: fsPromises.appendFile,
   write: fsPromises.writeFile,
   rename: fsPromises.rename,
-  fetch
+  fetch,
+  document: undefined
 }
 
 /** @type {IO} */
@@ -17,7 +18,8 @@ const nodeSync = {
   append: async(path, buffer) => fs.appendFileSync(path, buffer),
   write: async(path, buffer) => fs.writeFileSync(path, buffer),
   rename: async(oldPath, newPath) => fs.renameSync(oldPath, newPath),
-  fetch
+  fetch,
+  document: undefined
 }
 
 export default {

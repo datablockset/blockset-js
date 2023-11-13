@@ -8,7 +8,8 @@ const web = {
   append: notImplemented,
   write: notImplemented,
   rename: notImplemented,
-  fetch
+  fetch,
+  document
 }
 
 export default {

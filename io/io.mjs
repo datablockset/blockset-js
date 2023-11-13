@@ -5,6 +5,7 @@
 * readonly write: (path: string, buffer: Uint8Array) => Promise<void>,
 * readonly rename: (oldPath: string, newPath: string) => Promise<void>
 * readonly fetch: (url: string) => Promise<Response>
+* readonly document: Document | undefined
 * }} IO
 */
 
