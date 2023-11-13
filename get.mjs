@@ -62,12 +62,6 @@ const { tailToDigest } = digest256
  * }} Provider
 */
 
-/** @type {(address: Address) => string} */
-const getPath = ([address, isRoot]) => {
-  const dir = isRoot ? 'roots' : 'parts'
-  return `cdt0/${dir}/${address.substring(0, 2)}/${address.substring(2, 4)}/${address.substring(4)}`
-}
-
 /** @type {(state: State) => (block: Block) => void} */
 const insertBlock = state => block => {
   for (let i = 0; i < state.length; i++) {
@@ -138,10 +132,6 @@ const nextState = state => {
   }
 }
 
-/** @type {(hostName: string) => (address: Address) => Promise<Uint8Array>} */
-const fetchRead = hostName => address => fetch(`https://${hostName}/${getPath(address)}`)
-    .then(async (resp) => resp.arrayBuffer().then(buffer => new Uint8Array(buffer)))
-
 /** @type {(provider: Provider) => (root: string) => Promise<string | null>} */
 const get = ({ read, write }) => async (root) => {
   /** @type {State} */
@@ -194,6 +184,5 @@ const get = ({ read, write }) => async (root) => {
 }
 
 export default {
-  get,
-  fetchRead
+  get
 }
