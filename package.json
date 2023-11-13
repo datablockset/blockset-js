@@ -1,6 +1,6 @@
 {
   "name": "blockset-js",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "BLOCKSET on JavaScript",
   "keywords": ["blockset", "content-addressable", "storage", "cdt", "content-dependent-tree", "hash"],
   "main": "index.mjs",
