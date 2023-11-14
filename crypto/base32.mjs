@@ -16,17 +16,17 @@ const getParityBit = uint256 => {
 
 /** @type {(bu224: bigint) => string} */
 const toBase32Hash = bu224 => {
-    let address = ''
+    let result = ''
     const parity = getParityBit(bu224)
     for (let j = 0; j < 45; j++) {
         let uint5 = Number(bu224 & 0b11111n)
         if (j == 44) {
             uint5 += parity << 4
         }
-        address += toBase32(uint5)
+        result += toBase32(uint5)
         bu224 >>= 5n
     }
-    return address
+    return result
 }
 
 export default {
