@@ -15,7 +15,7 @@ const getParityBit = uint256 => {
 }
 
 /** @type {(bu224: bigint) => string} */
-const toAddress = bu224 => {
+const toBase32Hash = bu224 => {
     let address = ''
     const parity = getParityBit(bu224)
     for (let j = 0; j < 45; j++) {
@@ -30,6 +30,6 @@ const toAddress = bu224 => {
 }
 
 export default {
-    toAddress,
+    toBase32Hash,
     getParityBit
 }

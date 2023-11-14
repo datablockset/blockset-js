@@ -1,8 +1,8 @@
-import getModule from './get.mjs'
+import forest from './forest/index.mjs'
 import ioWeb from './io/web.mjs'
 import index from './index.mjs'
-/** @typedef {import('./get.mjs').Address} Address */
-const { get } = getModule
+/** @typedef {import('./forest/index.mjs').ForestNodeId} ForestNodeId */
+const { get } = forest
 const { web } = ioWeb
 const { fetchRead } = index
 
@@ -16,11 +16,11 @@ d.getElementById('download').addEventListener('click', () => {
   const host = d.getElementById('input-host').value
   let buffer = new Uint8Array()
   const fRead = fetchRead(host)(web)
-  /** @type {(address: Address) => Promise<Uint8Array>} */
-  const read = address => {
+  /** @type {(forestNodeId: ForestNodeId) => Promise<Uint8Array>} */
+  const read = forestNodeId => {
     // @ts-ignore
-    d.getElementById('log').innerText += `read from ${address}\n`
-    return fRead(address)
+    d.getElementById('log').innerText += `read from ${forestNodeId}\n`
+    return fRead(forestNodeId)
   }
   /** @type {(b: Uint8Array) => Promise<void>} */
   const write = async (b) => {

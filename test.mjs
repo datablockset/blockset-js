@@ -1,20 +1,20 @@
-import base32 from './base32.mjs'
-import sha224 from './sha224.mjs'
-import digest256 from './digest256.mjs'
-import subtree from './subtree.mjs'
-import tree from './tree.mjs'
+import base32 from './crypto/base32.mjs'
+import sha224 from './crypto/sha224.mjs'
+import nodeId from './cdt/node-id.mjs'
+import subTree from './cdt/sub-tree.mjs'
+import mainTree from './cdt/main-tree.mjs'
 import index from './index.mjs'
 import ioNode from './io/node.mjs'
 import fs from 'node:fs'
 import fsPromises from 'node:fs/promises'
-/** @typedef {import('./subtree.mjs').State} StateSubTree */
-/** @typedef {import('./tree.mjs').State} StateTree */
+/** @typedef {import('./cdt/sub-tree.mjs').State} StateSubTree */
+/** @typedef {import('./cdt/main-tree.mjs').State} StateTree */
 /** @typedef {import('./io/io.mjs').IO} IO */
-const { toAddress, getParityBit } = base32
+const { toBase32Hash, getParityBit } = base32
 const { compress } = sha224
-const { merge, byteToDigest, len } = digest256
-const { highestOne256, height, push: pushSubTree } = subtree
-const { push: pushTree, end: endTree } = tree
+const { merge, byteToNodeId, len } = nodeId
+const { highestOne256, height, push: pushSubTree } = subTree
+const { push: pushTree, end: endTree } = mainTree
 const { getLocal, getRemote } = index
 const { node, nodeSync } = ioNode
 
@@ -37,9 +37,9 @@ console.log(`test start`)
 }
 
 {
-  const a = byteToDigest(0x12)
+  const a = byteToNodeId(0x12)
   if (a !== 0x0800_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0012n) { throw a.toString(16) }
-  const b = byteToDigest(0x34)
+  const b = byteToNodeId(0x34)
   if (b !== 0x0800_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0034n) { throw b.toString(16) }
   const lenA = len(a)
   if (lenA !== 8n) { throw lenA.toString(16) }
@@ -165,9 +165,9 @@ console.log(`test start`)
   }
 
   {
-    let a = byteToDigest(0b01)
-    let b = byteToDigest(0b10)
-    let c = byteToDigest(0b11)
+    let a = byteToNodeId(0b01)
+    let b = byteToNodeId(0b10)
+    let c = byteToNodeId(0b11)
     {
       /** @type {StateSubTree} */
       let state = []
@@ -208,8 +208,8 @@ console.log(`test start`)
   for (let byte of data) {
     pushTree(tree)(byte)
   }
-  const digest = endTree(tree)
-  const result = toAddress(digest)
+  const nodeId = endTree(tree)
+  const result = toBase32Hash(nodeId)
   if (result !== 'vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe') { throw result }
 }
 

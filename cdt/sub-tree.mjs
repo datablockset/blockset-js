@@ -1,5 +1,5 @@
-import digest256 from './digest256.mjs'
-const { merge } = digest256
+import nodeId from './node-id.mjs'
+const { merge } = nodeId
 
 /**
  * @typedef {readonly [bigint, bigint, bigint]} Node
