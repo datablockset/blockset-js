@@ -1,9 +1,9 @@
-import digest256 from './digest256.mjs'
-import subtree from './subtree.mjs'
-import sha224 from './sha224.mjs'
-/** @typedef {import('./subtree.mjs').State} SubTreeState */
-const { byteToDigest } = digest256
-const { newState: newSubTree, push: pushSubTree, end: endSubTree } = subtree
+import nodeId from './node-id.mjs'
+import subTree from './sub-tree.mjs'
+import sha224 from '../crypto/sha224.mjs'
+/** @typedef {import('./sub-tree.mjs').State} SubTreeState */
+const { byteToNodeId } = nodeId
+const { newState: newSubTree, push: pushSubTree, end: endSubTree } = subTree
 const { compress } = sha224
 
 /**
@@ -13,10 +13,10 @@ const { compress } = sha224
 const mask224 = ((1n << 224n) - 1n)
 
 /** @type {(state: State) => (nu8: number) => void} */
-const push = state => nu8 => pushDigest(state)(byteToDigest(nu8))
+const push = state => nu8 => pushNodeId(state)(byteToNodeId(nu8))
 
 /** @type {(state: State) => (bu256: bigint) => void} */
-const pushDigest = state => last0 => {
+const pushNodeId = state => last0 => {
     let i = 0
     while (true) {
         let subTree = state[i]
@@ -38,11 +38,11 @@ const end = state => compress(internalEnd(state)) & mask224
 
 /** @type {(state: State) => bigint | null} */
 const partialEnd = state => {
-    let digest256 = internalEnd(state)
-    if (digest256 >> 224n !== 0xffff_ffffn) {
+    let nodeId = internalEnd(state)
+    if (nodeId >> 224n !== 0xffff_ffffn) {
         return null
     }
-    return digest256 & mask224
+    return nodeId & mask224
 }
 
 /** @type {(state: State) => bigint} */
@@ -56,7 +56,7 @@ const internalEnd = state => {
 
 export default {
     push,
-    pushDigest,
+    pushNodeId,
     end,
     partialEnd
 }

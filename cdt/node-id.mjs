@@ -1,11 +1,9 @@
-import sha224 from './sha224.mjs'
+import sha224 from '../crypto/sha224.mjs'
 const { compress2 } = sha224
 
 const maxLength = 248n
 
 const u32Mask = 0xffff_ffffn
-
-const hashMask = u32Mask << 224n;
 
 const byteMask = 0x08n << maxLength
 
@@ -17,7 +15,7 @@ const dataMask = (1n << 248n) - 1n
 const len = bu256 => (bu256 >> maxLength) & u32Mask
 
 /** @type {(nu8: number) => bigint} */
-const byteToDigest = nu8 => BigInt(nu8) | byteMask
+const byteToNodeId = nu8 => BigInt(nu8) | byteMask
 
 /** @type {(bu256: bigint) => bigint} */
 const getData = bu256 => bu256 & dataMask
@@ -42,20 +40,20 @@ const merge = a => b => {
 
 
 /** @type {(tail: Uint8Array) => bigint} */
-const tailToDigest = tail => {
+const tailToNodeId = tail => {
     if (tail.length > 31) {
         throw 'invalid tail'
     }
     let result = 0n
     for(let byte of tail) {
-        result = merge(result)(byteToDigest(byte))
+        result = merge(result)(byteToNodeId(byte))
     }
     return result
 }
 
 export default {
     merge,
-    byteToDigest,
-    tailToDigest,
+    byteToNodeId,
+    tailToNodeId,
     len
 }
