@@ -12,6 +12,7 @@ import ioVirtual from './io/virtual.mjs'
 /** @typedef {import('./cdt/main-tree.mjs').State} StateTree */
 /** @typedef {import('./io/io.mjs').IO} IO */
 /** @typedef {import('./io/virtual.mjs').FileSystem} FileSystem */
+/** @typedef {import('./index.mjs').Cache} Cache */
 const { toBase32Hash, getParityBit } = base32
 const { compress } = sha224
 const { merge, byteToNodeId, len } = nodeId
@@ -211,9 +212,20 @@ const virtualFsTest = async () => {
   io.write('test', new Uint8Array([0, 1, 2]))
   let buffer = io.read('test')
   console.log(buffer)
+  console.log(fs)
+
   io.write('test', new Uint8Array([3, 4, 5]))
   buffer = io.read('test')
   console.log(buffer)
+  console.log(fs)
+
+  io.append('test', new Uint8Array([6, 7, 8]))
+  buffer = io.read('test')
+  console.log(buffer)
+  console.log(fs)
+
+  io.rename('test', 'test-new')
+  console.log(fs)
 }
 
 virtualFsTest()
@@ -288,12 +300,14 @@ const runTestsGet = io => async (getFunc) => {
 }
 
 const mainTestAsync = async () => {
+  /** @type {Cache} */
+  const mem = {}
   console.log('sync provider')
-  await runTestsGet(nodeSync)(getLocal)
+  await runTestsGet(nodeSync)(getLocal(mem))
   console.log('async provider')
-  await runTestsGet(node)(getLocal)
+  await runTestsGet(node)(getLocal(mem))
   console.log('fetch provider')
-  await runTestsGet(node)(getRemote('410f5a49.blockset-js-test.pages.dev'))
+  await runTestsGet(node)(getRemote({})('410f5a49.blockset-js-test.pages.dev'))
 }
 
 mainTestAsync()
