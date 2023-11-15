@@ -7,9 +7,11 @@ import index from './index.mjs'
 import ioNode from './io/node.mjs'
 import fs from 'node:fs'
 import fsPromises from 'node:fs/promises'
+import ioFake from './io/fake.mjs'
 /** @typedef {import('./cdt/sub-tree.mjs').State} StateSubTree */
 /** @typedef {import('./cdt/main-tree.mjs').State} StateTree */
 /** @typedef {import('./io/io.mjs').IO} IO */
+/** @typedef {import('./io/fake.mjs').FileSystem} FileSystem */
 const { toBase32Hash, getParityBit } = base32
 const { compress } = sha224
 const { merge, byteToNodeId, len } = nodeId
@@ -17,6 +19,7 @@ const { highestOne256, height, push: pushSubTree } = subTree
 const { push: pushTree, end: endTree } = mainTree
 const { getLocal, getRemote } = index
 const { node, nodeSync } = ioNode
+const { fake } = ioFake
 
 console.log(`test start`)
 
@@ -200,6 +203,20 @@ console.log(`test start`)
     }
   }
 }
+
+const fakeFsTest = async () => {
+  /** @type {FileSystem} */
+  const fs = {}
+  const io = fake(fs)
+  io.write('test', new Uint8Array([0, 1, 2]))
+  let buffer = io.read('test')
+  console.log(buffer)
+  io.write('test', new Uint8Array([3, 4, 5]))
+  buffer = io.read('test')
+  console.log(buffer)
+}
+
+fakeFsTest()
 
 {
   const data = fs.readFileSync(`examples/small.txt`)
