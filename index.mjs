@@ -30,7 +30,6 @@ const cache = mem => forestGet => {
     const nodeIdString = `${nodeId[0]}${nodeId[1]}`
     let buffer = mem[nodeIdString]
     if (buffer !== undefined) {
-      console.log(`found ${nodeIdString}`)
       return buffer
     }
     buffer = await forestGet(nodeId)
