@@ -2,20 +2,21 @@ import fs from 'node:fs'
 import childProcess from 'node:child_process'
 import { promisify } from 'node:util'
 
-const exec2 = promisify(childProcess.exec)
+const execPromise = promisify(childProcess.exec)
 
 /** @type {(cmd: string) => Promise<void>} */
 const exec = async(cmd) => {
-  await exec2(cmd).then(({stdout, stderr}) => {
-    console.log(`exec ${cmd}`)
-
+  console.log(`exec ${cmd}`)
+  try {
+    const { stdout, stderr } = await execPromise(cmd)
     if (stderr) {
       console.error(`stderr: ${stderr}`);
       return;
     }
-
     console.log(`stdout:\n${stdout}`);
-  }).catch(reason => console.error(`error: ${reason.message}`))
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 const publish = async () => {
