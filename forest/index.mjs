@@ -56,8 +56,12 @@ const { tailToNodeId } = nodeId
 */
 
 /**
+ * @typedef {(forestNodeId: ForestNodeId) => Promise<Uint8Array>} ForestGet
+*/
+
+/**
  * @typedef {{
- * readonly read: (address: ForestNodeId) => Promise<Uint8Array>,
+ * readonly read: ForestGet,
  * readonly write: (buffer: Uint8Array) => Promise<void>,
  * }} Provider
 */
