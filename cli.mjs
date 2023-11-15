@@ -14,5 +14,5 @@ if (args.length < 2) {
 }
 
 const hostName = args[2]
-const getFunc = hostName === undefined ? getLocal : getRemote(hostName)
+const getFunc = hostName === undefined ? getLocal({}) : getRemote({})(hostName)
 getFunc(node)([args[0], args[1]])
