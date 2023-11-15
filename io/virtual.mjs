@@ -40,7 +40,7 @@ const rename = fs => async (oldPath, newPath) => {
 }
 
 /** @type {(fs: FileSystem) => IO} */
-const fake = fs => {
+const virtual = fs => {
   return {
     read: read(fs),
     append: append(fs),
@@ -52,5 +52,5 @@ const fake = fs => {
 }
 
 export default {
-  fake
+  virtual
 }
