@@ -209,23 +209,22 @@ const virtualFsTest = async () => {
   /** @type {FileSystem} */
   const fs = {}
   const io = virtual(fs)
-  io.write('test', new Uint8Array([0, 1, 2]))
-  let buffer = io.read('test')
-  console.log(buffer)
-  console.log(fs)
+  await io.write('test', new Uint8Array([0, 1, 2]))
+  let buffer = await io.read('test')
+  if (buffer.toString() !== '0,1,2') { throw buffer }
 
-  io.write('test', new Uint8Array([3, 4, 5]))
-  buffer = io.read('test')
-  console.log(buffer)
-  console.log(fs)
+  await io.write('test', new Uint8Array([3, 4, 5]))
+  buffer = await io.read('test')
+  if (buffer.toString() !== '3,4,5') { throw buffer }
 
-  io.append('test', new Uint8Array([6, 7, 8]))
-  buffer = io.read('test')
-  console.log(buffer)
-  console.log(fs)
+  await io.append('test', new Uint8Array([6, 7, 8]))
+  buffer = await io.read('test')
+  if (buffer.toString() !== '3,4,5,6,7,8') { throw buffer }
 
-  io.rename('test', 'test-new')
-  console.log(fs)
+  await io.rename('test', 'test-new')
+  //buffer = await io.read('test') //catch error
+  buffer = await io.read('test-new')
+  if (buffer.toString() !== '3,4,5,6,7,8') { throw buffer }
 }
 
 virtualFsTest()
