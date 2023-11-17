@@ -47,6 +47,7 @@ const virtual = fs => {
     write: write(fs),
     rename: rename(fs),
     fetch: notImplemented,
+    consoleLog: () => {},
     document: undefined
   }
 }

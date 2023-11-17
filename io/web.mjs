@@ -8,6 +8,7 @@ const web = {
   append: notImplemented,
   write: notImplemented,
   rename: notImplemented,
+  consoleLog: () => {},
   fetch,
   document
 }
