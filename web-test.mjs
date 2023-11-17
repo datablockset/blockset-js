@@ -6,7 +6,17 @@ const { get } = forest
 const { web } = ioWeb
 const { fetchRead } = index
 
-const d = web.document
+const webIo = web(d => ({
+  log: text => {
+    // @ts-ignore
+    d.getElementById('log').innerText += `${text}\n`
+  },
+  error: text => {
+    // @ts-ignore
+    d.getElementById('log').innerText += `${text}\n`
+  }
+}))
+const d = webIo.document
 // @ts-ignore
 d.getElementById('download').addEventListener('click', () => {
   reset()
@@ -15,23 +25,20 @@ d.getElementById('download').addEventListener('click', () => {
   // @ts-ignore
   const host = d.getElementById('input-host').value
   let buffer = new Uint8Array()
-  const fRead = fetchRead(host)(web)
+  const fRead = fetchRead(host)(webIo)
   /** @type {(forestNodeId: ForestNodeId) => Promise<Uint8Array>} */
   const read = forestNodeId => {
-    // @ts-ignore
-    d.getElementById('log').innerText += `read from ${forestNodeId}\n`
+    webIo.console.log(`read from ${forestNodeId}`)
     return fRead(forestNodeId)
   }
   /** @type {(b: Uint8Array) => Promise<void>} */
   const write = async (b) => {
-    // @ts-ignore
-    d.getElementById('log').innerText += `write ${b.length}\n`
-      buffer = new Uint8Array([...buffer, ...b])
+    webIo.console.log(`write ${b.length}`)
+    buffer = new Uint8Array([...buffer, ...b])
   }
   get({ read, write })(hash).then(exitCode => {
     if (exitCode !== null) {
-      // @ts-ignore
-      d.getElementById('log').innerText += `error exit code = ${exitCode}\n`
+      webIo.console.error(`error exit code = ${exitCode}`)
       return
     }
 
@@ -48,7 +55,7 @@ d.getElementById('download').addEventListener('click', () => {
     // @ts-ignore
     d.getElementById('output-text').style.display = 'block'
     // @ts-ignore
-    d.getElementById('output-text').innerText =  new TextDecoder().decode(buffer)
+    d.getElementById('output-text').innerText = new TextDecoder().decode(buffer)
   })
 });
 
