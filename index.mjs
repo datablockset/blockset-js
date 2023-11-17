@@ -48,7 +48,7 @@ const getLocal = mem => io => async ([root, file]) => {
   const write = buffer => io.append(tempFile, buffer)
   const error = await get({ read, write })(root)
   if (error !== null) {
-    console.error(error)
+    io.console.error(error)
     return -1
   }
   await io.rename(tempFile, file)
@@ -65,7 +65,7 @@ const getRemote = mem => host => io => async ([root, file]) => {
   const write = buffer => io.append(tempFile, buffer)
   const error = await get({ read, write })(root)
   if (error !== null) {
-    console.error(error)
+    io.console.error(error)
     return -1
   }
   await io.rename(tempFile, file)
