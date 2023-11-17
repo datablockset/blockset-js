@@ -8,6 +8,7 @@ import ioNode from './io/node.mjs'
 import fs from 'node:fs'
 import fsPromises from 'node:fs/promises'
 import ioVirtual from './io/virtual.mjs'
+import assert from 'node:assert'
 /** @typedef {import('./cdt/sub-tree.mjs').State} StateSubTree */
 /** @typedef {import('./cdt/main-tree.mjs').State} StateTree */
 /** @typedef {import('./io/io.mjs').IO} IO */
@@ -228,6 +229,15 @@ const virtualFsTest = async () => {
 }
 
 virtualFsTest()
+
+/** @type {() => IO} */
+const createVirtualFileSystem = () => {
+  /** @type {FileSystem} */
+  const fs = {}
+  const io = virtual(fs)
+
+  return io
+}
 
 {
   const data = fs.readFileSync(`examples/small.txt`)

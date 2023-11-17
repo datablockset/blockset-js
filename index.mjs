@@ -57,6 +57,7 @@ const getLocal = mem => io => async ([root, file]) => {
 
 /** @type {(mem: Cache) => (host: string) => (io: IO) => (root: [string, string]) => Promise<number>} */
 const getRemote = mem => host => io => async ([root, file]) => {
+  io.consoleLog(`getRemote ${root}`)
   const tempFile = `_temp_${root}`
   await io.write(tempFile, new Uint8Array())
   /** @type {ForestGet} */

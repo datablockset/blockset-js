@@ -6,7 +6,11 @@ const { get } = forest
 const { web } = ioWeb
 const { fetchRead } = index
 
-const d = web.document
+const webIo = web(d => text => {
+  // @ts-ignore
+  d.getElementById('log').innerText += `${text}\n`
+})
+const d = webIo.document
 // @ts-ignore
 d.getElementById('download').addEventListener('click', () => {
   reset()
@@ -15,7 +19,7 @@ d.getElementById('download').addEventListener('click', () => {
   // @ts-ignore
   const host = d.getElementById('input-host').value
   let buffer = new Uint8Array()
-  const fRead = fetchRead(host)(web)
+  const fRead = fetchRead(host)(webIo)
   /** @type {(forestNodeId: ForestNodeId) => Promise<Uint8Array>} */
   const read = forestNodeId => {
     // @ts-ignore
