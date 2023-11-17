@@ -6,10 +6,16 @@ const { get } = forest
 const { web } = ioWeb
 const { fetchRead } = index
 
-const webIo = web(d => text => {
-  // @ts-ignore
-  d.getElementById('log').innerText += `${text}\n`
-})
+const webIo = web(d => ({
+  log: text => {
+    // @ts-ignore
+    d.getElementById('log').innerText += `${text}\n`
+  },
+  error: text => {
+    // @ts-ignore
+    d.getElementById('log').innerText += `${text}\n`
+  }
+}))
 const d = webIo.document
 // @ts-ignore
 d.getElementById('download').addEventListener('click', () => {
@@ -22,17 +28,17 @@ d.getElementById('download').addEventListener('click', () => {
   const fRead = fetchRead(host)(webIo)
   /** @type {(forestNodeId: ForestNodeId) => Promise<Uint8Array>} */
   const read = forestNodeId => {
-    webIo.consoleLog(`read from ${forestNodeId}\n`)
+    webIo.console.log(`read from ${forestNodeId}`)
     return fRead(forestNodeId)
   }
   /** @type {(b: Uint8Array) => Promise<void>} */
   const write = async (b) => {
-    webIo.consoleLog(`write ${b.length}\n`)
+    webIo.console.log(`write ${b.length}`)
     buffer = new Uint8Array([...buffer, ...b])
   }
   get({ read, write })(hash).then(exitCode => {
     if (exitCode !== null) {
-      webIo.consoleLog(`error exit code = ${exitCode}\n`)
+      webIo.console.error(`error exit code = ${exitCode}`)
       return
     }
 

@@ -1,16 +1,16 @@
 /** @typedef {import('./io.mjs').IO} IO */
-/** @typedef {import('./io.mjs').Logger} Logger */
+/** @typedef {import('./io.mjs').Console} Console */
 
 const notImplemented = () => { throw 'not implemented' }
 
-/** @type {(createLogger: (d: Document) => Logger) => IO} */
-const web = createLogger => {
+/** @type {(createConsole: (d: Document) => Console) => IO} */
+const web = createConsole => {
   return {
     read: notImplemented,
     append: notImplemented,
     write: notImplemented,
     rename: notImplemented,
-    consoleLog: createLogger(document),
+    console: createConsole(document),
     fetch,
     document
   }

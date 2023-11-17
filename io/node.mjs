@@ -8,7 +8,7 @@ const node = {
   append: fsPromises.appendFile,
   write: fsPromises.writeFile,
   rename: fsPromises.rename,
-  consoleLog: () => {},
+  console: {log: console.log, error: console.error},
   fetch,
   document: undefined
 }
@@ -19,7 +19,7 @@ const nodeSync = {
   append: async(path, buffer) => fs.appendFileSync(path, buffer),
   write: async(path, buffer) => fs.writeFileSync(path, buffer),
   rename: async(oldPath, newPath) => fs.renameSync(oldPath, newPath),
-  consoleLog: () => {},
+  console: {log: console.log, error: console.error},
   fetch,
   document: undefined
 }

@@ -12,7 +12,7 @@ import assert from 'node:assert'
 /** @typedef {import('./cdt/sub-tree.mjs').State} StateSubTree */
 /** @typedef {import('./cdt/main-tree.mjs').State} StateTree */
 /** @typedef {import('./io/io.mjs').IO} IO */
-/** @typedef {import('./io/virtual.mjs').FileSystem} FileSystem */
+/** @typedef {import('./io/virtual.mjs').MemIo} MemIo */
 /** @typedef {import('./index.mjs').Cache} Cache */
 const { toBase32Hash, getParityBit } = base32
 const { compress } = sha224
@@ -21,7 +21,7 @@ const { highestOne256, height, push: pushSubTree } = subTree
 const { push: pushTree, end: endTree } = mainTree
 const { getLocal, getRemote } = index
 const { node, nodeSync } = ioNode
-const { virtual } = ioVirtual
+const { virtual, createMemIo } = ioVirtual
 
 console.log(`test start`)
 
@@ -207,9 +207,8 @@ console.log(`test start`)
 }
 
 const virtualFsTest = async () => {
-  /** @type {FileSystem} */
-  const fs = {}
-  const io = virtual(fs)
+  const memIo = createMemIo()
+  const io = virtual(memIo)
   await io.write('test', new Uint8Array([0, 1, 2]))
   let buffer = await io.read('test')
   if (buffer.toString() !== '0,1,2') { throw buffer }
@@ -229,15 +228,6 @@ const virtualFsTest = async () => {
 }
 
 virtualFsTest()
-
-/** @type {() => IO} */
-const createVirtualFileSystem = () => {
-  /** @type {FileSystem} */
-  const fs = {}
-  const io = virtual(fs)
-
-  return io
-}
 
 {
   const data = fs.readFileSync(`examples/small.txt`)

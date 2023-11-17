@@ -6,6 +6,13 @@ const notImplemented = () => { throw 'not implemented' }
  * @typedef {{[index: string]: Uint8Array}} FileSystem
  */
 
+/**
+ * @typedef {{
+ * readonly fs: FileSystem,
+ * readonly console: { log: string, error: string }
+ * }} MemIo
+ */
+
 /** @type {(fs: FileSystem) => (path: string) => Promise<Uint8Array>} */
 const read = fs => async (path) => {
   const buffer = fs[path]
@@ -39,19 +46,29 @@ const rename = fs => async (oldPath, newPath) => {
   fs[newPath] = buffer
 }
 
-/** @type {(fs: FileSystem) => IO} */
-const virtual = fs => {
+/** @type {(memIo: MemIo) => IO} */
+const virtual = ({ fs, console }) => {
   return {
     read: read(fs),
     append: append(fs),
     write: write(fs),
     rename: rename(fs),
     fetch: notImplemented,
-    consoleLog: () => {},
+    console: { log: text => console.log += `${text}\n`, error: text => console.error += `${text}\n` },
     document: undefined
   }
 }
 
+/** @type {() => MemIo} */
+const createMemIo = () => ({
+  fs: {},
+  console: {
+    log: '',
+    error: ''
+  }
+})
+
 export default {
-  virtual
+  virtual,
+  createMemIo
 }
