@@ -84,9 +84,6 @@ const copyFrom = fileSystem => dir => {
   })
 }
 
-// /** @type {(files: string[]) => (dir: string) => void} */
-// const scanDir =
-
 export default {
   virtual,
   createMemIo,
