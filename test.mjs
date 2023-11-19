@@ -21,7 +21,7 @@ const { highestOne256, height, push: pushSubTree } = subTree
 const { push: pushTree, end: endTree } = mainTree
 const { getLocal, getRemote } = index
 const { node, nodeSync } = ioNode
-const { virtual, createMemIo } = ioVirtual
+const { virtual, createMemIo, copyFrom } = ioVirtual
 
 console.log(`test start`)
 
@@ -241,9 +241,9 @@ virtualFsTest()
   if (result !== 'vqfrc4k5j9ftnrqvzj40b67abcnd9pdjk62sq7cpbg7xe') { throw result }
 }
 
-/** @type {(file: string) => Uint8Array} */
-const readExample = file => {
-  let buffer = fs.readFileSync(file)
+/** @type {(io: IO) => (file: string) => Promise<Uint8Array>} */
+const readExample = io => async (file) => {
+  let buffer = await io.read(file)
   let temp = []
   for (let ch of buffer) {
     if (ch !== 13) {
@@ -263,6 +263,19 @@ const runTest = async (f) => {
 
 /** @typedef {(io: IO) => (root: [string, string]) => Promise<number>} GetFunc*/
 
+/** @type {(a: Uint8Array) => (b: Uint8Array) => boolean} */
+const equals = a => b => {
+  if (a.length != b.length) {
+    return false
+  }
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) {
+      return false
+    }
+  }
+  return true
+}
+
 /** @type {(io: IO) => (getFunc: GetFunc) => Promise<void>} */
 const runTestsGet = io => async (getFunc) => {
   const getWithProvider = getFunc(io)
@@ -270,27 +283,27 @@ const runTestsGet = io => async (getFunc) => {
     const exitCode = await getWithProvider(['vqra44skpkefw4bq9k96xt9ks84221dmk1pzaym86cqd6', '_out_list1_async'])
     if (exitCode !== 0) { throw exitCode }
 
-    const bufferIn = readExample(`examples/list.txt`)
-    const bufferOut = await fsPromises.readFile(`_out_list1_async`)
-    if (!bufferOut.equals(bufferIn)) { throw 'files are different' }
+    const bufferIn = await readExample(io)(`examples/list.txt`)
+    const bufferOut = await io.read(`_out_list1_async`)
+    if (!equals(bufferOut)(bufferIn)) { throw 'files are different' }
   }
 
   const testGet2 = async () => {
     const exitCode = await getWithProvider(['awt9x8564999k276wap2e5b7n10575ffy946kencva4ve', 'examples/_out_list2_async'])
     if (exitCode !== 0) { throw exitCode }
 
-    const bufferIn = readExample(`examples/list2.txt`)
-    const bufferOut = await fsPromises.readFile(`examples/_out_list2_async`)
-    if (!bufferOut.equals(bufferIn)) { throw 'files are different' }
+    const bufferIn = await readExample(io)(`examples/list2.txt`)
+    const bufferOut = await io.read(`examples/_out_list2_async`)
+    if (!equals(bufferOut)(bufferIn)) { throw 'files are different' }
   }
 
   const testGetRepeat = async () => {
     const exitCode = await getWithProvider(['d963x31mwgb8svqe0jmkxh8ar1f8p2dawebnan4aj6hvd', '_out_repeat_async'])
     if (exitCode !== 0) { throw exitCode }
 
-    const bufferIn = readExample(`examples/repeat.txt`)
-    const bufferOut = await fsPromises.readFile(`_out_repeat_async`)
-    if (!bufferOut.equals(bufferIn)) { throw 'files are different' }
+    const bufferIn = await readExample(io)(`examples/repeat.txt`)
+    const bufferOut = await io.read(`_out_repeat_async`)
+    if (!equals(bufferOut)(bufferIn)) { throw 'files are different' }
   }
 
   await runTest(testGet1)
@@ -299,6 +312,11 @@ const runTestsGet = io => async (getFunc) => {
 }
 
 const mainTestAsync = async () => {
+  const memIo = createMemIo()
+  copyFrom(memIo.fs)('cdt0')
+  copyFrom(memIo.fs)('examples')
+  console.log(memIo.fs)
+
   /** @type {Cache} */
   const mem = {}
   console.log('sync provider')
@@ -307,6 +325,8 @@ const mainTestAsync = async () => {
   await runTestsGet(node)(getLocal(mem))
   console.log('fetch provider')
   await runTestsGet(node)(getRemote({})('410f5a49.blockset-js-test.pages.dev'))
+  console.log('virtual provider')
+  await runTestsGet(virtual(memIo))(getLocal(mem))
 }
 
 mainTestAsync()

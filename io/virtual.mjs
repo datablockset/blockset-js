@@ -1,3 +1,5 @@
+import fs from 'node:fs'
+import path from 'node:path'
 /** @typedef {import('./io.mjs').IO} IO */
 
 const notImplemented = () => { throw 'not implemented' }
@@ -68,7 +70,22 @@ const createMemIo = () => ({
   }
 })
 
+/** @type {(fileSystem: FileSystem) => (dir: string) => void} */
+const copyFrom = fileSystem => dir => {
+  fs.readdirSync(dir).forEach(file => {
+    file = `${dir}/${file}`
+    console.log(file)
+    const stat = fs.statSync(file)
+    if (stat.isDirectory()) {
+      copyFrom(fileSystem)(file)
+      return
+    }
+    fileSystem[file] = fs.readFileSync(file)
+  })
+}
+
 export default {
   virtual,
-  createMemIo
+  createMemIo,
+  copyFrom
 }
